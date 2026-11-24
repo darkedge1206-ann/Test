@@ -1,0 +1,19 @@
+{
+  "name": "捕夢網 DreamCatcher",
+  "short_name": "捕夢網",
+  "description": "個人小說創作、世界觀設定集與多軌時間流管理應用",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#FAF6F0",
+  "theme_color": "#2F3E46",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

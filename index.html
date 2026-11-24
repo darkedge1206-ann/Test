@@ -1,0 +1,3224 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#2F3E46" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="捕夢網" />
+  <meta name="description" content="捕夢網 DreamCatcher — 個人小說創作、世界觀設定集與多軌時間流管理應用" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <title>捕夢網 DreamCatcher</title>
+  <style>
+    :root {
+      --bg: #FAF6F0;
+      --surface: #FFFDF9;
+      --surface-2: #F3ECE1;
+      --primary: #2F3E46;
+      --primary-light: #3D515C;
+      --accent: #E07A5F;
+      --accent-soft: #FBECE7;
+      --sage: #6B9080;
+      --sage-soft: #E9F2EE;
+      --amber: #C88A2E;
+      --amber-soft: #FDF5E4;
+      --indigo: #3B5266;
+      --text: #2B2D42;
+      --muted: #6C757D;
+      --border: #E5DDD0;
+      --shadow: 0 2px 10px rgba(47, 62, 70, 0.06);
+      --radius: 12px;
+      --nav-h: 60px;
+      --safe-b: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      overscroll-behavior-y: contain;
+    }
+
+    .topbar {
+      position: sticky; top: 0; z-index: 40;
+      background: var(--primary);
+      color: #FFFDF9;
+      padding: 10px 14px;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15.5px; letter-spacing: 0.5px; }
+    .brand svg { width: 20px; height: 20px; stroke: #E07A5F; flex-shrink: 0; }
+    .top-actions { display: flex; align-items: center; gap: 6px; }
+    .folder-select {
+      background: rgba(255,255,255,0.14);
+      color: #FFFDF9;
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 8px;
+      padding: 5px 8px;
+      font-size: 12.5px;
+      max-width: 155px;
+      outline: none;
+    }
+    .folder-select option { background: var(--primary); color: #FFFDF9; }
+
+    .main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 12px 12px calc(var(--nav-h) + var(--safe-b) + 24px);
+    }
+
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      height: calc(var(--nav-h) + var(--safe-b));
+      padding-bottom: var(--safe-b);
+      box-shadow: 0 -2px 10px rgba(47,62,70,0.06);
+    }
+    .nav-btn {
+      background: none; border: none;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+      color: var(--muted); font-size: 11px; font-weight: 500; cursor: pointer; padding: 4px 2px;
+      transition: color 0.15s;
+    }
+    .nav-btn svg { width: 20px; height: 20px; stroke-width: 1.9; }
+    .nav-btn.active { color: var(--primary); font-weight: 700; }
+    .nav-btn.active .nav-pill {
+      background: var(--accent-soft); color: var(--accent);
+      padding: 2px 10px; border-radius: 99px; display: flex; align-items: center; justify-content: center;
+    }
+    .nav-pill { padding: 2px 10px; border-radius: 99px; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+    }
+    .card-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+    .card-title { font-size: 15px; font-weight: 700; color: var(--primary); margin: 0; }
+    .sec-label { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 0.4px; margin-bottom: 6px; display: block; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+      padding: 7px 12px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      border: 1px solid var(--border); background: var(--surface); color: var(--primary);
+      cursor: pointer; text-decoration: none; white-space: nowrap;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--primary); color: #FFFDF9; border-color: var(--primary); }
+    .btn-accent { background: var(--accent); color: #FFFDF9; border-color: var(--accent); }
+    .btn-sage { background: var(--sage); color: #FFFDF9; border-color: var(--sage); }
+    .btn-sm { padding: 4px 9px; font-size: 12px; border-radius: 7px; }
+    .btn-xs { padding: 3px 7px; font-size: 11px; border-radius: 6px; }
+
+    .input, .select, .textarea {
+      width: 100%; padding: 8px 10px; border-radius: 8px;
+      border: 1px solid var(--border); background: #FFF;
+      color: var(--text); font-size: 13.5px; font-family: inherit; outline: none;
+    }
+    .input:focus, .select:focus, .textarea:focus { border-color: var(--primary); }
+    .textarea { resize: vertical; line-height: 1.7; }
+
+    .pills-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 10px; scrollbar-width: none; }
+    .pills-row::-webkit-scrollbar { display: none; }
+    .pill {
+      padding: 4px 11px; border-radius: 99px; font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    }
+    .pill.active { background: var(--primary); color: #FFFDF9; border-color: var(--primary); }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 7px; border-radius: 6px; font-size: 11px; font-weight: 600;
+      background: var(--surface-2); color: var(--primary);
+    }
+    .st-idea { background: #EFE9F4; color: #5E4B73; }
+    .st-draft { background: var(--amber-soft); color: #9A6700; }
+    .st-revise { background: var(--accent-soft); color: #B84A2E; }
+    .st-done { background: var(--sage-soft); color: #3A6351; }
+
+    .prog-wrap { width: 100%; height: 7px; background: var(--surface-2); border-radius: 99px; overflow: hidden; margin: 6px 0; }
+    .prog-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.25s; }
+    .prog-fill.done { background: var(--sage); }
+
+    .search-wrap { position: relative; flex: 1; }
+    .search-wrap .input { padding-right: 30px; }
+    .search-clear {
+      position: absolute; right: 7px; top: 50%; transform: translateY(-50%);
+      border: none; background: var(--surface-2); color: var(--muted);
+      width: 20px; height: 20px; border-radius: 50%; font-size: 12px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .install-banner {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: #FFFDF9; border-radius: var(--radius); padding: 11px 14px; margin-bottom: 12px;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      box-shadow: var(--shadow);
+    }
+
+    .idea-banner {
+      background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--accent);
+      border-radius: var(--radius); padding: 12px 14px; margin-bottom: 12px;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      box-shadow: var(--shadow); cursor: pointer;
+    }
+    .idea-banner-title { font-size: 14.5px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 7px; }
+
+    /* Wiki 3-Column Grid Mode */
+    .wiki-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .wiki-grid-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 9px;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+      transition: transform 0.12s, border-color 0.15s;
+    }
+    .wiki-grid-card:active { transform: scale(0.98); }
+    .wiki-grid-card:hover { border-color: var(--primary); }
+    .wiki-grid-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .wiki-grid-summary {
+      font-size: 11.5px;
+      color: var(--muted);
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      word-break: break-word;
+    }
+
+    /* Unified Full-Page Wiki Detail View (No Avatar, Tabbed + Compact List Rows) */
+    .wd-shell {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .wd-banner {
+      color: #FFFDF9;
+      padding: 12px 14px 0;
+    }
+    .wd-top-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .wd-ghost-btn {
+      background: rgba(255,255,255,0.18);
+      color: #FFFDF9;
+      border: 1px solid rgba(255,255,255,0.28);
+      border-radius: 7px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .wd-ghost-btn:active { transform: scale(0.98); }
+    .wd-hero-info {
+      padding-bottom: 12px;
+    }
+    .wd-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+    .wd-title {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 800;
+      color: #FFFDF9;
+      letter-spacing: 0.3px;
+    }
+    .wd-cat-tag {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: rgba(255,255,255,0.22);
+      color: #FFFDF9;
+    }
+    .wd-summary {
+      font-size: 13px;
+      line-height: 1.6;
+      color: rgba(255,255,255,0.92);
+      word-break: break-word;
+    }
+    .wd-tabs {
+      display: flex;
+      overflow-x: auto;
+      scrollbar-width: none;
+      margin: 0 -14px;
+      padding: 0 10px;
+      background: rgba(0,0,0,0.12);
+    }
+    .wd-tabs::-webkit-scrollbar { display: none; }
+    .wd-tab {
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: rgba(255,255,255,0.78);
+      padding: 9px 12px 7px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .wd-tab.active {
+      color: #FFFDF9;
+      border-bottom-color: #FFFDF9;
+      font-weight: 800;
+    }
+    .wd-subbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+    }
+    .wd-add-btn {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 2px 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .wd-rows {
+      display: flex;
+      flex-direction: column;
+    }
+    .wd-row {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .wd-row:last-child { border-bottom: none; }
+    .wd-row-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 3px;
+    }
+    .wd-row-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+    .wd-row-val {
+      font-size: 13.5px;
+      color: var(--text);
+      line-height: 1.65;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .wd-row-empty {
+      color: #A0A8B0;
+      font-style: italic;
+      font-size: 12.5px;
+    }
+    .wd-row-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .wd-link-act {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 11.5px;
+      cursor: pointer;
+      padding: 0;
+    }
+    .wd-link-act:hover { color: var(--primary); }
+    .wd-link-del { color: #B84A2E; }
+    .wd-foot-sec-title {
+      padding: 7px 14px;
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .graph-box {
+      position: relative; width: 100%; height: 340px;
+      background: #F7F2E9; border: 1px solid var(--border); border-radius: var(--radius);
+      overflow: hidden; touch-action: none; margin-bottom: 12px;
+    }
+    #rel-svg { width: 100%; height: 100%; display: block; }
+    .graph-controls {
+      position: absolute; right: 8px; bottom: 8px; display: flex; gap: 4px; z-index: 5;
+    }
+
+    .reader-paper {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 18px 16px; font-size: 15px; line-height: 1.95; color: #222;
+      white-space: pre-wrap; word-break: break-word;
+    }
+    .wiki-link {
+      color: var(--accent); font-weight: 600; border-bottom: 1px dashed var(--accent);
+      cursor: pointer; padding: 0 1px;
+    }
+    .editor-area {
+      width: 100%; min-height: 52vh; padding: 14px; border-radius: var(--radius);
+      border: 1px solid var(--border); background: var(--surface);
+      font-size: 15px; line-height: 1.95; color: #222; font-family: inherit;
+      outline: none; resize: vertical;
+    }
+    .kbd-bar {
+      position: sticky; bottom: calc(var(--nav-h) + var(--safe-b) + 6px); z-index: 30;
+      background: var(--primary); padding: 6px 8px; border-radius: 10px;
+      display: flex; gap: 5px; overflow-x: auto; margin-top: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    }
+    .kbd-btn {
+      background: rgba(255,255,255,0.14); color: #FFFDF9; border: none;
+      border-radius: 6px; padding: 5px 9px; font-size: 12.5px; font-weight: 600;
+      white-space: nowrap; cursor: pointer; flex-shrink: 0;
+    }
+
+    .era-header {
+      background: var(--surface-2); border: 1px solid var(--border); border-radius: 9px;
+      padding: 8px 12px; margin: 12px 0 8px;
+      display: flex; align-items: center; justify-content: space-between; cursor: pointer;
+      font-weight: 700; color: var(--primary); font-size: 13.5px;
+    }
+    .parallel-group {
+      border: 1.5px dashed var(--amber); background: rgba(253, 245, 228, 0.45);
+      border-radius: var(--radius); padding: 8px; margin-bottom: 10px;
+    }
+    .parallel-head {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 12px; font-weight: 700; color: #9A6700; margin-bottom: 6px; padding: 0 4px;
+    }
+    .tl-card {
+      background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--primary);
+      border-radius: 10px; padding: 11px 12px; margin-bottom: 8px; box-shadow: var(--shadow);
+    }
+
+    .cmp-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .cmp-grid-1 { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    .cmp-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      padding: 10px; min-width: 0; word-break: break-word; overflow-wrap: anywhere;
+    }
+
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 80;
+      background: rgba(25, 33, 38, 0.55);
+      display: flex; align-items: flex-end; justify-content: center;
+      padding: 10px;
+    }
+    @media (min-width: 640px) { .modal-backdrop { align-items: center; } }
+    .modal-box {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 14px;
+      width: 100%; max-width: 560px; max-height: 86vh; overflow-y: auto;
+      padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+    .modal-head {
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 12px;
+    }
+    .modal-title { font-size: 15.5px; font-weight: 700; color: var(--primary); margin: 0; }
+
+    .ac-pop {
+      position: fixed; left: 12px; right: 12px; bottom: calc(var(--nav-h) + var(--safe-b) + 52px);
+      max-width: 520px; margin: 0 auto; z-index: 75;
+      background: var(--surface); border: 1.5px solid var(--primary); border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2); max-height: 210px; overflow-y: auto; padding: 6px;
+    }
+    .ac-item {
+      padding: 7px 10px; border-radius: 7px; cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between; font-size: 13px;
+    }
+    .ac-item:hover { background: var(--surface-2); }
+
+    .row-between { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .row-wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .muted { color: var(--muted); font-size: 12.5px; }
+    .empty-box { text-align: center; padding: 28px 14px; color: var(--muted); font-size: 13.5px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="10" r="7"></circle>
+        <path d="M12 3a7 7 0 0 0 0 14M5 10h14M7.5 5.5l9 9M16.5 5.5l-9 9M8 17l-1 4M12 17v5M16 17l1 4"></path>
+      </svg>
+      <span>捕夢網</span>
+    </div>
+    <div class="top-actions">
+      <select id="global-folder-select" class="folder-select" onchange="setFolderFilter(this.value)"></select>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,0.14);color:#FFFDF9;border-color:rgba(255,255,255,0.22);" onclick="openFolderModal()">資料夾</button>
+    </div>
+  </header>
+
+  <main id="app-main" class="main"></main>
+
+  <nav class="bottom-nav" id="bottom-nav"></nav>
+
+  <div id="modal-root"></div>
+  <div id="ac-root"></div>
+
+<script>
+const STORAGE_KEY = 'dreamcatcher_final_state';
+
+const DEFAULT_TEMPLATES = {
+  '角色': ['外貌', '性格', '性別 / 年齡', '所屬勢力', '核心能力', '武器 / 術式', '弱點 / 代價'],
+  '地點': ['所屬區域', '地理環境', '風土特徵', '重要地標', '核心勢力', '特產與資源', '防禦 / 禁制'],
+  '勢力': ['領袖人物', '宗旨與立場', '據點分布', '代表徽記', '核心戰力', '特殊資源', '規章制度'],
+  '物品': ['品階 / 類型', '外觀描述', '材質工藝', '現任持有者', '特殊效果', '發動條件', '限制與代價'],
+  '術法': ['系統分類', '修習門檻', '施展徵兆', '傳承源流', '核心效果', '發動代價', '反噬與破解'],
+  '其他': ['補充標籤', '詳細備註']
+};
+
+const CATEGORY_DETAIL_SCHEMAS = {
+  '角色': {
+    color: '#E07A5F',
+    tabs: [
+      { id: 'basic', label: '基礎設定', fields: ['外貌', '性格', '性別 / 年齡', '所屬勢力'] },
+      { id: 'ability', label: '能力設定', fields: ['核心能力', '武器 / 術式', '弱點 / 代價'] },
+      { id: 'relations', label: '人際關係', isRelations: true },
+      { id: 'extra', label: '補充', fields: ['人物小傳', '伏筆備忘'], includeBody: true },
+      { id: 'footprint', label: '足跡', isFootprint: true }
+    ]
+  },
+  '地點': {
+    color: '#6B9080',
+    tabs: [
+      { id: 'basic', label: '基礎設定', fields: ['所屬區域', '地理環境', '風土特徵', '重要地標'] },
+      { id: 'ability', label: '勢力資源', fields: ['核心勢力', '特產與資源', '防禦 / 禁制'] },
+      { id: 'relations', label: '關聯事物', isRelations: true },
+      { id: 'extra', label: '補充', fields: ['歷史沿革', '場景備忘'], includeBody: true },
+      { id: 'footprint', label: '足跡', isFootprint: true }
+    ]
+  },
+  '勢力': {
+    color: '#C88A2E',
+    tabs: [
+      { id: 'basic', label: '基礎設定', fields: ['領袖人物', '宗旨與立場', '據點分布', '代表徽記'] },
+      { id: 'ability', label: '組織實力', fields: ['核心戰力', '特殊資源', '規章制度'] },
+      { id: 'relations', label: '關聯事物', isRelations: true },
+      { id: 'extra', label: '補充', fields: ['歷史沿革', '內部暗流'], includeBody: true },
+      { id: 'footprint', label: '足跡', isFootprint: true }
+    ]
+  },
+  '物品': {
+    color: '#2F3E46',
+    tabs: [
+      { id: 'basic', label: '基礎設定', fields: ['品階 / 類型', '外觀描述', '材質工藝', '現任持有者'] },
+      { id: 'ability', label: '能力效用', fields: ['特殊效果', '發動條件', '限制與代價'] },
+      { id: 'relations', label: '關聯事物', isRelations: true },
+      { id: 'extra', label: '補充', fields: ['來歷傳說', '伏筆備忘'], includeBody: true },
+      { id: 'footprint', label: '足跡', isFootprint: true }
+    ]
+  },
+  '術法': {
+    color: '#3B5266',
+    tabs: [
+      { id: 'basic', label: '基礎設定', fields: ['系統分類', '修習門檻', '施展徵兆', '傳承源流'] },
+      { id: 'ability', label: '效果代價', fields: ['核心效果', '發動代價', '反噬與破解'] },
+      { id: 'relations', label: '關聯事物', isRelations: true },
+      { id: 'extra', label: '補充', fields: ['演變歷史', '特殊變體'], includeBody: true },
+      { id: 'footprint', label: '足跡', isFootprint: true }
+    ]
+  }
+};
+
+function getCategorySchema(cat) {
+  if (CATEGORY_DETAIL_SCHEMAS[cat]) return CATEGORY_DETAIL_SCHEMAS[cat];
+  const tplFields = (state && state.templates && state.templates[cat]) || ['補充標籤', '詳細備註'];
+  return {
+    color: '#2F3E46',
+    tabs: [
+      { id: 'basic', label: '基礎設定', fields: tplFields },
+      { id: 'relations', label: '關聯事物', isRelations: true },
+      { id: 'extra', label: '補充', fields: [], includeBody: true },
+      { id: 'footprint', label: '足跡', isFootprint: true }
+    ]
+  };
+}
+
+const DEFAULT_TRACKS = [
+  { id: 'tr_lore', name: '世界編年史', color: '#2F3E46' },
+  { id: 'tr_main', name: '主線劇情', color: '#E07A5F' },
+  { id: 'tr_secret', name: '角色秘辛', color: '#6B9080' }
+];
+
+function stripEmojiPrefix(str) {
+  return String(str || '').replace(/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\s]+/u, '').trim();
+}
+
+function createSeedState() {
+  const fId = 'f_star';
+  return {
+    activeTab: 'home',
+    folderFilter: 'all',
+    folders: [
+      { id: fId, name: '星辰邊境（奇幻長篇）' },
+      { id: 'f_mist', name: '霧港手記（懸疑短篇集）' }
+    ],
+    templates: JSON.parse(JSON.stringify(DEFAULT_TEMPLATES)),
+    wikiCategory: '全部',
+    wikiSearch: '',
+    wikiView: 'list',
+    wikiListMode: 'grid',
+    wikiDetailId: null,
+    wikiDetailTab: 'basic',
+    wiki: [
+      {
+        id: 'w_1', folderId: fId, category: '角色', title: '沈星回',
+        summary: '霧港觀星台最後一位見習守夜人，左眼能看見殘留於古物上的星軌記憶。',
+        attrs: {
+          '外貌': '銀灰短髮、左眼淡金異瞳，常穿深色防風測繪大衣',
+          '性格': '冷靜內斂、重諾守信，熟人面前偶爾毒舌',
+          '性別 / 年齡': '男 / 23歲',
+          '所屬勢力': '守夜人殘部',
+          '核心能力': '星軌回溯、微光感知',
+          '武器 / 術式': '星紋短刃、觀星術',
+          '弱點 / 代價': '過度回溯會引發偏頭痛與短暫失明'
+        },
+        customFields: {
+          basic: [{ id: 'cf_1', label: '隨身信物', value: '師父留下的黃銅懷錶' }],
+          ability: [],
+          extra: []
+        },
+        body: '自幼在霧港邊緣的舊燈塔長大，師父失蹤後獨自守護觀星台紀錄與天球儀。',
+        relations: [{ targetId: 'w_2', label: '昔日同門' }, { targetId: 'w_4', label: '常駐守護' }, { targetId: 'w_6', label: '持有者' }]
+      },
+      {
+        id: 'w_2', folderId: fId, category: '角色', title: '陸沉舟',
+        summary: '王都鐘樓首席機械修復師，暗中追查十年前日蝕事故的幕後真相。',
+        attrs: {
+          '外貌': '琥珀色護目鏡、深棕微捲短髮，左臂配戴黃銅發條義肢',
+          '性格': '機敏果斷、行事縝密，習慣以理性掩飾牽掛',
+          '性別 / 年齡': '男 / 24歲',
+          '所屬勢力': '白鴉學社',
+          '核心能力': '精密機關重構、以太頻率解析',
+          '武器 / 術式': '發條義手、以太探測儀',
+          '弱點 / 代價': '義肢需定期注入高純度星屑液維護'
+        },
+        customFields: { basic: [], ability: [], extra: [] },
+        body: '表面在王都經營鐘錶鋪，實則為「白鴉學社」核心情報解碼人。',
+        relations: [{ targetId: 'w_1', label: '昔日同門' }, { targetId: 'w_5', label: '核心成員' }]
+      },
+      {
+        id: 'w_3', folderId: fId, category: '角色', title: '林霧眠',
+        summary: '穿梭於霧港與王都之間的海上列車長，掌握帝國西境所有暗潮航線。',
+        attrs: {
+          '外貌': '墨綠長風衣、銀框單片眼鏡，隨身攜帶黃銅哨笛',
+          '性格': '灑脫不羈、八面玲瓏，從不無償出手',
+          '性別 / 年齡': '女 / 26歲',
+          '所屬勢力': '無所屬（中立擺渡人）',
+          '核心能力': '迷霧導航、潮汐直覺',
+          '武器 / 術式': '折疊燧發槍、引航燈',
+          '弱點 / 代價': '離海超過七日體力會急劇衰退'
+        },
+        customFields: { basic: [], ability: [], extra: [] },
+        body: '駕駛舊時代遺留的蒸汽海上列車，曾多次在暴風夜替白鴉學社運送機密卷宗。',
+        relations: [{ targetId: 'w_2', label: '情報合作' }]
+      },
+      {
+        id: 'w_4', folderId: fId, category: '地點', title: '霧港觀星台',
+        summary: '建於西境海崖斷壁上的古老石塔，能觀測星海潮汐與裂隙波動。',
+        attrs: {
+          '所屬區域': '帝國西境海岸・霧港',
+          '地理環境': '三面環海的玄武岩懸崖，終年海霧瀰漫',
+          '風土特徵': '潮汐落差極大，退潮時才會露出通往塔底的石階',
+          '重要地標': '頂層黃銅天球儀、地下星圖檔案室',
+          '核心勢力': '守夜人殘部',
+          '特產與資源': '星屑凝晶、深海夜光苔',
+          '防禦 / 禁制': '第一紀元星輝結界（非守夜人血脈難以接近頂層）'
+        },
+        customFields: { basic: [], ability: [], extra: [] },
+        body: '塔頂保存著第一紀元遺留的黃銅天球儀，是鎮壓星海裂隙的關鍵樞紐。',
+        relations: [{ targetId: 'w_1', label: '駐守者' }]
+      },
+      {
+        id: 'w_5', folderId: fId, category: '勢力', title: '白鴉學社',
+        summary: '隱匿於王都地下檔案館的民間學者結社，致力於保存被抹除的紀元史料。',
+        attrs: {
+          '領袖人物': '代號「夜鶯」（真實身分未明）',
+          '宗旨與立場': '中立偏改革，反對王室封鎖日蝕事故真相',
+          '據點分布': '王都鐘樓地下室、各大港埠舊書店',
+          '代表徽記': '銜著銀色齒輪的白鴉剪影',
+          '核心戰力': '古代機關術士、密文破譯者',
+          '特殊資源': '完整的第一紀元星曆抄本',
+          '規章制度': '單線聯絡制，成員彼此僅以代號相稱'
+        },
+        customFields: { basic: [], ability: [], extra: [] },
+        body: '成立於十年前日蝕事故之後，成員多為昔日皇家天文院的流亡學者。',
+        relations: [{ targetId: 'w_2', label: '核心成員' }]
+      },
+      {
+        id: 'w_6', folderId: fId, category: '物品', title: '殘缺星盤',
+        summary: '刻滿第一紀元星軌的銀質羅盤，缺乏中央指針卻仍能感應裂隙共鳴。',
+        attrs: {
+          '品階 / 類型': '遺物級・觀測魔導具',
+          '外觀描述': '直徑約十二公分的古銀圓盤，邊緣鑲嵌七枚暗淡星石',
+          '材質工藝': '秘銀與隕鐵合金鍛造，內部結構無法以現代工藝拆解',
+          '現任持有者': '沈星回',
+          '特殊效果': '靠近星海裂隙或另一半碎片時會發出藍白微光與低鳴',
+          '發動條件': '需以守夜人靈力或星屑液引導',
+          '限制與代價': '共鳴過強時會灼傷持有者掌心'
+        },
+        customFields: { basic: [], ability: [], extra: [] },
+        body: '沈星回師父失蹤前留下的唯一遺物，與王都鐘樓底層發現的另一半銀盤彼此呼應。',
+        relations: [{ targetId: 'w_1', label: '持有者' }]
+      }
+    ],
+    books: [
+      {
+        id: 'b_1', folderId: fId, title: '星辰邊境：霧海潮聲',
+        desc: '當星盤指針再次轉動，沉睡於霧港底下的舊日約定逐一甦醒。',
+        volumes: [
+          {
+            id: 'v_1', title: '第一卷・霧港夜行',
+            chapters: [
+              {
+                id: 'c_1', title: '第一章 觀星台的鐘聲', status: 'done', goal: 2000,
+                outline: '沈星回在暴風雨夜察覺天球儀異常，收到來自王都的密信。',
+                content: '　　海霧在午夜前漫過了石階。\n　　沈星回提著防風燈走上霧港觀星台頂層時，那座沉寂了十年的黃銅天球儀正發出細微的齒輪咬合聲。他伸手按住腰間的星紋短刃，目光落在桌上那封蓋著白鴉火漆的信箋上——寄信人正是三年前不告而別的陸沉舟。',
+                updatedAt: '2026/11/24 10:20',
+                snapshots: []
+              },
+              {
+                id: 'c_2', title: '第二章 霜降次日的密會', status: 'revise', goal: 2500,
+                outline: '沈星回抵達王都鐘樓與陸沉舟會合，兩人比對殘缺星盤。',
+                content: '　　王都的晨鐘敲過七響，鐘樓閣樓裡瀰漫著機油與舊羊皮紙的氣味。\n　　陸沉舟推起額前的琥珀色護目鏡，將半枚刻滿星軌的銀盤推到桌心：「霜降那晚不只是霧港有異動，王都地下鐘室的指針也倒轉了整整三刻。」',
+                updatedAt: '2026/11/24 11:45',
+                snapshots: []
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    lastEdited: { bookId: 'b_1', volId: 'v_1', chapId: 'c_2' },
+    ideas: [
+      { id: 'i_1', folderId: fId, text: '伏筆：天球儀每次逆轉時，持有殘缺星盤者會短暫聽見十年前的對話殘響。', createdAt: '2026/11/23 21:10' },
+      { id: 'i_2', folderId: fId, text: '場景點子：林霧眠駕駛的海上列車在暴雨中停靠於半淹沒的舊燈塔月台。', createdAt: '2026/11/24 09:40' }
+    ],
+    tracks: JSON.parse(JSON.stringify(DEFAULT_TRACKS)),
+    tlTrackFilter: 'all',
+    tlSearch: '',
+    collapsedEras: [],
+    timeline: [
+      {
+        id: 't_1', folderId: fId, trackId: 'tr_lore', era: '舊曆・星隕紀元',
+        timeLabel: '舊曆 998 年・冬至', weight: 100,
+        title: '觀星台建立與天球儀封印',
+        desc: '初代守夜人在霧港海崖築起霧港觀星台，以黃銅天球儀鎮壓星海裂隙。',
+        wikiIds: ['w_4'], chapterRefs: []
+      },
+      {
+        id: 't_2', folderId: fId, trackId: 'tr_main', era: '第一卷・霧港篇',
+        timeLabel: '星曆 292 年・霜降次日', weight: 210,
+        title: '沈星回攜星盤啟程前往王都鐘樓',
+        desc: '沈星回攜帶殘缺星盤離開霧港觀星台，沿海岸線北上赴約。',
+        wikiIds: ['w_1', 'w_4', 'w_6'], chapterRefs: [{ bookId: 'b_1', volId: 'v_1', chapId: 'c_1' }]
+      },
+      {
+        id: 't_3', folderId: fId, trackId: 'tr_secret', era: '第一卷・霧港篇',
+        timeLabel: '星曆 292 年・霜降次日', weight: 210,
+        title: '陸沉舟潛入地下鐘室取得日蝕紀錄',
+        desc: '同一時刻，陸沉舟代表白鴉學社潛入王都鐘樓底層，發現十年前日蝕事故的銷毀名單。',
+        wikiIds: ['w_2', 'w_5'], chapterRefs: [{ bookId: 'b_1', volId: 'v_1', chapId: 'c_2' }]
+      }
+    ],
+    bookView: { bookId: null, chapId: null, mode: 'read', returnToTimeline: false },
+    graphState: { scale: 1, tx: 0, ty: 0, nodePos: {} }
+  };
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('dreamcatcher_v3_state') || localStorage.getItem('dreamcatcher_v1_state');
+    if (!raw) return createSeedState();
+    return migrateState(JSON.parse(raw));
+  } catch (e) {
+    return createSeedState();
+  }
+}
+
+function migrateState(s) {
+  const seed = createSeedState();
+  const st = Object.assign({}, seed, s || {});
+  if (!Array.isArray(st.folders) || !st.folders.length) st.folders = seed.folders;
+  st.folders.forEach(f => { f.name = stripEmojiPrefix(f.name); });
+  if (!st.templates || typeof st.templates !== 'object') st.templates = seed.templates;
+  if (!Array.isArray(st.wiki)) st.wiki = [];
+  st.wiki.forEach(w => {
+    if (!w.customFields || typeof w.customFields !== 'object') {
+      w.customFields = { basic: [], ability: [], extra: [] };
+    }
+  });
+  if (!Array.isArray(st.books)) st.books = [];
+  if (!Array.isArray(st.ideas)) st.ideas = [];
+  if (!Array.isArray(st.tracks) || !st.tracks.length) st.tracks = seed.tracks;
+  if (!Array.isArray(st.timeline)) st.timeline = [];
+  if (!Array.isArray(st.collapsedEras)) st.collapsedEras = [];
+  if (!st.bookView) st.bookView = { bookId: null, chapId: null, mode: 'read', returnToTimeline: false };
+  if (!st.graphState) st.graphState = { scale: 1, tx: 0, ty: 0, nodePos: {} };
+  if (!['list', 'grid'].includes(st.wikiListMode)) st.wikiListMode = 'grid';
+  if (st.wikiDetailId === undefined) st.wikiDetailId = null;
+  if (!st.wikiDetailTab) st.wikiDetailTab = 'basic';
+  if (!['wiki', 'timeline', 'home', 'books', 'backup'].includes(st.activeTab)) st.activeTab = 'home';
+  return st;
+}
+
+let state = loadState();
+let deferredInstallPrompt = null;
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.warn('Storage save failed', e);
+  }
+}
+
+function uid(prefix) {
+  return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+function nowStr() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function esc(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function countWords(text) {
+  return String(text || '').replace(/\s+/g, '').length;
+}
+
+function getFolderName(id) {
+  if (!id || id === 'all') return '全部資料夾';
+  const f = state.folders.find(x => x.id === id);
+  return f ? stripEmojiPrefix(f.name) : '未分類';
+}
+
+function matchFolder(itemFolderId) {
+  if (state.folderFilter === 'all') return true;
+  return itemFolderId === state.folderFilter;
+}
+
+function renderTopFolderSelect() {
+  const sel = document.getElementById('global-folder-select');
+  if (!sel) return;
+  let opts = `<option value="all" ${state.folderFilter === 'all' ? 'selected' : ''}>全部資料夾（${state.folders.length}）</option>`;
+  state.folders.forEach(f => {
+    const clean = stripEmojiPrefix(f.name);
+    opts += `<option value="${esc(f.id)}" ${state.folderFilter === f.id ? 'selected' : ''}>${esc(clean)}</option>`;
+  });
+  sel.innerHTML = opts;
+}
+
+function setFolderFilter(val) {
+  state.folderFilter = val;
+  saveState();
+  render();
+}
+
+function renderBottomNav() {
+  const nav = document.getElementById('bottom-nav');
+  if (!nav) return;
+  const items = [
+    {
+      id: 'wiki', label: '設定集',
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>'
+    },
+    {
+      id: 'timeline', label: '時間流',
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>'
+    },
+    {
+      id: 'home', label: '首頁',
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg>'
+    },
+    {
+      id: 'books', label: '作品櫃',
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>'
+    },
+    {
+      id: 'backup', label: '資料備份',
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'
+    }
+  ];
+
+  nav.innerHTML = items.map(it => {
+    const active = state.activeTab === it.id;
+    return `<button class="nav-btn ${active ? 'active' : ''}" onclick="switchTab('${it.id}')">
+      <div class="nav-pill">${it.svg}</div>
+      <span>${it.label}</span>
+    </button>`;
+  }).join('');
+}
+
+function switchTab(tab) {
+  state.activeTab = tab;
+  if (tab !== 'books') {
+    state.bookView.returnToTimeline = false;
+  }
+  if (tab !== 'wiki') {
+    state.wikiDetailId = null;
+  }
+  closeAc();
+  saveState();
+  render();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+function findChapterContext(bookId, volId, chapId) {
+  const book = state.books.find(b => b.id === bookId);
+  if (!book) return null;
+  for (const v of (book.volumes || [])) {
+    if (volId && v.id !== volId) continue;
+    const ch = (v.chapters || []).find(c => c.id === chapId);
+    if (ch) return { book, vol: v, chap: ch };
+  }
+  return null;
+}
+
+function getLatestChapterContext() {
+  if (state.lastEdited) {
+    const found = findChapterContext(state.lastEdited.bookId, state.lastEdited.volId, state.lastEdited.chapId);
+    if (found) return found;
+  }
+  for (const b of state.books) {
+    for (const v of (b.volumes || [])) {
+      if (v.chapters && v.chapters.length) {
+        return { book: b, vol: v, chap: v.chapters[0] };
+      }
+    }
+  }
+  return null;
+}
+
+function statusBadgeHtml(st) {
+  const map = {
+    idea: ['st-idea', '構思中'],
+    draft: ['st-draft', '草稿'],
+    revise: ['st-revise', '修訂中'],
+    done: ['st-done', '已完成']
+  };
+  const [cls, label] = map[st] || map.draft;
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function renderHomeModule() {
+  const ctx = getLatestChapterContext();
+  const filteredIdeas = state.ideas.filter(i => matchFolder(i.folderId));
+
+  let installHtml = '';
+  if (deferredInstallPrompt) {
+    installHtml = `
+      <div class="install-banner">
+        <div>
+          <div style="font-weight:700;font-size:14px;">安裝「捕夢網」到裝置</div>
+          <div style="font-size:12px;opacity:0.88;">離線可用、全螢幕沉浸創作體驗</div>
+        </div>
+        <button class="btn btn-accent btn-sm" onclick="triggerPwaInstall()">立即安裝</button>
+      </div>`;
+  }
+
+  let recentHtml = '';
+  let goalHtml = '';
+
+  if (ctx) {
+    const { book, vol, chap } = ctx;
+    const words = countWords(chap.content);
+    const goal = Number(chap.goal) || 0;
+    const pct = goal > 0 ? Math.min(100, Math.round((words / goal) * 100)) : (words > 0 ? 100 : 0);
+    const reached = goal > 0 && words >= goal;
+
+    recentHtml = `
+      <div class="card">
+        <div class="card-header">
+          <span class="sec-label" style="margin:0;">最近更新</span>
+          ${statusBadgeHtml(chap.status)}
+        </div>
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:2px;">${esc(book.title)} · ${esc(vol.title)}</div>
+        <div style="font-size:16px;font-weight:700;color:var(--primary);margin-bottom:6px;">${esc(chap.title)}</div>
+        <div class="row-between" style="font-size:12.5px;">
+          <span>目前字數：<strong>${words.toLocaleString()}</strong>${goal > 0 ? ` / ${goal.toLocaleString()} 字` : ' 字'}</span>
+          <span style="color:${reached ? 'var(--sage)' : 'var(--accent)'};font-weight:700;">${goal > 0 ? pct + '%' : '無字數上限'}</span>
+        </div>
+        <div class="prog-wrap"><div class="prog-fill ${reached ? 'done' : ''}" style="width:${pct}%"></div></div>
+        <div class="row-between" style="margin-top:10px;">
+          <span class="muted">更新於 ${esc(chap.updatedAt || '剛剛')}</span>
+          <div class="row-wrap">
+            <button class="btn btn-sm" onclick="jumpToChapter('${book.id}','${vol.id}','${chap.id}','read')">閱讀此章</button>
+            <button class="btn btn-primary btn-sm" onclick="jumpToChapter('${book.id}','${vol.id}','${chap.id}','edit')">繼續寫作</button>
+          </div>
+        </div>
+      </div>`;
+
+    let totalWords = 0;
+    let totalChaps = 0;
+    let doneChaps = 0;
+    (book.volumes || []).forEach(v => {
+      (v.chapters || []).forEach(c => {
+        totalChaps++;
+        totalWords += countWords(c.content);
+        if (c.status === 'done') doneChaps++;
+      });
+    });
+    const bookPct = totalChaps > 0 ? Math.round((doneChaps / totalChaps) * 100) : 0;
+
+    goalHtml = `
+      <div class="card">
+        <div class="card-header">
+          <span class="sec-label" style="margin:0;">完本目標</span>
+          <span class="badge">${esc(getFolderName(book.folderId))}</span>
+        </div>
+        <div style="font-size:15.5px;font-weight:700;color:var(--primary);margin-bottom:8px;">《${esc(book.title)}》</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+          <div style="background:var(--surface-2);padding:9px 10px;border-radius:9px;">
+            <div class="muted" style="font-size:11.5px;">書籍累計總字數</div>
+            <div style="font-size:17px;font-weight:800;color:var(--primary);">${totalWords.toLocaleString()} <span style="font-size:12px;font-weight:500;">字</span></div>
+          </div>
+          <div style="background:var(--surface-2);padding:9px 10px;border-radius:9px;">
+            <div class="muted" style="font-size:11.5px;">章節完稿進度</div>
+            <div style="font-size:17px;font-weight:800;color:var(--sage);">${doneChaps} <span style="font-size:12px;font-weight:500;color:var(--text);">/ ${totalChaps} 章（${bookPct}%）</span></div>
+          </div>
+        </div>
+        <div class="prog-wrap"><div class="prog-fill done" style="width:${bookPct}%"></div></div>
+        <div style="text-align:right;margin-top:8px;">
+          <button class="btn btn-sm" onclick="openBookCatalog('${book.id}')">進入作品目錄</button>
+        </div>
+      </div>`;
+  } else {
+    recentHtml = `
+      <div class="card empty-box">
+        <div style="font-weight:700;color:var(--primary);margin-bottom:6px;">尚未建立任何作品章節</div>
+        <button class="btn btn-primary btn-sm" onclick="switchTab('books')">前往作品櫃開始創作</button>
+      </div>`;
+  }
+
+  const ideaHtml = `
+    <div class="idea-banner" onclick="openIdeaBoxModal()">
+      <div class="idea-banner-title">
+        <span>靈感便籤箱</span>
+        <span class="badge st-revise">${filteredIdeas.length} 則</span>
+      </div>
+      <button class="btn btn-accent btn-sm" onclick="event.stopPropagation();openQuickIdeaModal()">＋ 速記</button>
+    </div>`;
+
+  return installHtml + recentHtml + goalHtml + ideaHtml;
+}
+
+/* ======================== WIKI MODULE ======================== */
+function renderWikiModule() {
+  if (state.wikiDetailId) {
+    return renderWikiDetailPage(state.wikiDetailId);
+  }
+
+  const cats = ['全部', ...Object.keys(state.templates)];
+  const catPills = cats.map(c =>
+    `<button class="pill ${state.wikiCategory === c ? 'active' : ''}" onclick="setWikiCategory('${esc(c)}')">${esc(c)}</button>`
+  ).join('');
+
+  return `
+    <div class="row-between" style="margin-bottom:8px;">
+      <div class="search-wrap">
+        <input id="wiki-search-input" class="input" type="text" placeholder="搜尋詞條、分類、屬性欄位或關係..."
+          value="${esc(state.wikiSearch)}" oninput="onWikiSearchInput(this.value)" />
+        ${state.wikiSearch ? `<button class="search-clear" onclick="clearWikiSearch()">×</button>` : ''}
+      </div>
+      <button class="btn btn-sm ${state.wikiView === 'graph' ? 'btn-primary' : ''}" onclick="toggleWikiView()">
+        ${state.wikiView === 'graph' ? '返回條目' : '關係圖譜'}
+      </button>
+      <button class="btn btn-accent btn-sm" onclick="openWikiEditModal()">＋ 詞條</button>
+    </div>
+    <div class="pills-row" id="wiki-cat-pills">${catPills}</div>
+    <div id="wiki-dynamic-area">${renderWikiDynamicContent()}</div>
+  `;
+}
+
+function onWikiSearchInput(val) {
+  state.wikiSearch = val;
+  const area = document.getElementById('wiki-dynamic-area');
+  if (area) area.innerHTML = renderWikiDynamicContent();
+  const inp = document.getElementById('wiki-search-input');
+  if (inp && inp.parentElement) {
+    let clr = inp.parentElement.querySelector('.search-clear');
+    if (val && !clr) {
+      clr = document.createElement('button');
+      clr.className = 'search-clear';
+      clr.textContent = '×';
+      clr.onclick = clearWikiSearch;
+      inp.parentElement.appendChild(clr);
+    } else if (!val && clr) {
+      clr.remove();
+    }
+  }
+}
+
+function clearWikiSearch() {
+  state.wikiSearch = '';
+  const inp = document.getElementById('wiki-search-input');
+  if (inp) { inp.value = ''; inp.focus(); }
+  onWikiSearchInput('');
+}
+
+function setWikiCategory(c) {
+  state.wikiCategory = c;
+  render();
+}
+
+function toggleWikiView() {
+  state.wikiView = state.wikiView === 'graph' ? 'list' : 'graph';
+  render();
+  if (state.wikiView === 'graph') setTimeout(initGraphInteractions, 30);
+}
+
+function setWikiListMode(mode) {
+  state.wikiListMode = mode;
+  state.wikiView = 'list';
+  saveState();
+  const area = document.getElementById('wiki-dynamic-area');
+  if (area) area.innerHTML = renderWikiDynamicContent();
+  else render();
+}
+
+function openWikiDetailPage(id, tabId) {
+  const w = state.wiki.find(x => x.id === id);
+  if (!w) return;
+  closeModal();
+  const schema = getCategorySchema(w.category);
+  const validTabIds = schema.tabs.map(t => t.id);
+  state.activeTab = 'wiki';
+  state.wikiDetailId = id;
+  if (tabId && validTabIds.includes(tabId)) {
+    state.wikiDetailTab = tabId;
+  } else if (!validTabIds.includes(state.wikiDetailTab)) {
+    state.wikiDetailTab = schema.tabs[0].id;
+  }
+  saveState();
+  render();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+function switchWikiDetailTab(tabId) {
+  state.wikiDetailTab = tabId;
+  saveState();
+  render();
+}
+
+function closeWikiDetailPage() {
+  state.wikiDetailId = null;
+  saveState();
+  render();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+function matchWikiItem(w, kw) {
+  if (!matchFolder(w.folderId)) return false;
+  if (state.wikiCategory !== '全部' && w.category !== state.wikiCategory) return false;
+  if (!kw) return true;
+  const q = kw.toLowerCase();
+  if ((w.title || '').toLowerCase().includes(q)) return true;
+  if ((w.category || '').toLowerCase().includes(q)) return true;
+  if ((w.summary || '').toLowerCase().includes(q)) return true;
+  if ((w.body || '').toLowerCase().includes(q)) return true;
+  if (w.attrs) {
+    for (const [k, v] of Object.entries(w.attrs)) {
+      if (k.toLowerCase().includes(q) || String(v || '').toLowerCase().includes(q)) return true;
+    }
+  }
+  if (w.customFields) {
+    for (const arr of Object.values(w.customFields)) {
+      if (Array.isArray(arr)) {
+        for (const cf of arr) {
+          if ((cf.label || '').toLowerCase().includes(q) || (cf.value || '').toLowerCase().includes(q)) return true;
+        }
+      }
+    }
+  }
+  if (Array.isArray(w.relations)) {
+    for (const r of w.relations) {
+      const target = state.wiki.find(x => x.id === r.targetId);
+      if ((r.label || '').toLowerCase().includes(q)) return true;
+      if (target && (target.title || '').toLowerCase().includes(q)) return true;
+    }
+  }
+  return false;
+}
+
+function renderWikiDynamicContent() {
+  if (state.wikiView === 'graph') {
+    setTimeout(initGraphInteractions, 20);
+    return renderRelationshipGraph();
+  }
+
+  const kw = state.wikiSearch.trim();
+  const matched = state.wiki.filter(w => matchWikiItem(w, kw));
+
+  const topTools = `
+    <div class="row-between" style="margin-bottom:8px;">
+      <span class="muted">共 ${matched.length} 筆設定</span>
+      <div class="row-wrap">
+        <div style="display:inline-flex;border:1px solid var(--border);border-radius:7px;overflow:hidden;background:var(--surface);">
+          <button class="btn btn-xs ${state.wikiListMode === 'grid' ? 'btn-primary' : ''}" style="border:none;border-radius:0;" onclick="setWikiListMode('grid')">網格</button>
+          <button class="btn btn-xs ${state.wikiListMode === 'list' ? 'btn-primary' : ''}" style="border:none;border-radius:0;" onclick="setWikiListMode('list')">清單</button>
+        </div>
+        <button class="btn btn-xs" onclick="openTemplateModal()">分類模板設定</button>
+      </div>
+    </div>`;
+
+  if (!matched.length) {
+    return topTools + `<div class="card empty-box">找不到符合條件的設定詞條。</div>`;
+  }
+
+  if (state.wikiListMode === 'grid') {
+    const gridCards = matched.map(w => `
+      <div class="wiki-grid-card" onclick="openWikiDetailPage('${w.id}','basic')">
+        <div><span class="badge" style="font-size:10.5px;padding:1px 6px;">${esc(w.category)}</span></div>
+        <div class="wiki-grid-title">${esc(w.title)}</div>
+        <div class="wiki-grid-summary">${esc(w.summary || '（暫無摘要）')}</div>
+      </div>
+    `).join('');
+    return topTools + `<div class="wiki-grid-3">${gridCards}</div>`;
+  }
+
+  const cards = matched.map(w => {
+    const attrsEntries = Object.entries(w.attrs || {}).filter(([, v]) => String(v || '').trim() !== '');
+    const rels = (w.relations || []).map(r => {
+      const t = state.wiki.find(x => x.id === r.targetId);
+      if (!t) return '';
+      return `<span class="badge" style="cursor:pointer;background:var(--accent-soft);color:var(--accent);" onclick="event.stopPropagation();openWikiDetailPage('${t.id}','basic')">${esc(r.label)}：${esc(t.title)}</span>`;
+    }).filter(Boolean).join('');
+
+    return `
+      <div class="card" style="cursor:pointer;" onclick="openWikiDetailPage('${w.id}','basic')">
+        <div class="card-header">
+          <div class="row-wrap">
+            <span class="badge">${esc(w.category)}</span>
+            <span class="card-title">${esc(w.title)}</span>
+          </div>
+          <div class="row-wrap">
+            <button class="btn btn-xs" onclick="event.stopPropagation();openWikiEditModal('${w.id}')">編輯</button>
+            <button class="btn btn-xs" style="color:#B84A2E;" onclick="event.stopPropagation();deleteWiki('${w.id}')">刪除</button>
+          </div>
+        </div>
+        ${w.summary ? `<div style="margin-bottom:6px;font-size:13.5px;">${esc(w.summary)}</div>` : ''}
+        ${attrsEntries.length ? `
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:4px 10px;background:var(--surface-2);padding:7px 9px;border-radius:8px;margin-bottom:6px;font-size:12px;">
+            ${attrsEntries.map(([k, v]) => `<div><span class="muted">${esc(k)}：</span><strong>${esc(v)}</strong></div>`).join('')}
+          </div>` : ''}
+        ${rels ? `<div class="row-wrap" style="margin-top:4px;">${rels}</div>` : ''}
+      </div>`;
+  }).join('');
+
+  return topTools + cards;
+}
+
+/* Unified Full-Page Wiki Detail View (No Avatar, Tabbed, Compact List Rows) */
+function renderWikiDetailPage(id) {
+  const w = state.wiki.find(x => x.id === id);
+  if (!w) {
+    state.wikiDetailId = null;
+    return renderWikiModule();
+  }
+
+  const schema = getCategorySchema(w.category);
+  const validTabIds = schema.tabs.map(t => t.id);
+  const activeTabId = validTabIds.includes(state.wikiDetailTab) ? state.wikiDetailTab : schema.tabs[0].id;
+  const activeTabDef = schema.tabs.find(t => t.id === activeTabId) || schema.tabs[0];
+
+  const tabsHtml = schema.tabs.map(t =>
+    `<button class="wd-tab ${t.id === activeTabId ? 'active' : ''}" onclick="switchWikiDetailTab('${t.id}')">${esc(t.label)}</button>`
+  ).join('');
+
+  let subbarHtml = '';
+  let bodyRowsHtml = '';
+
+  if (activeTabDef.isRelations) {
+    subbarHtml = `
+      <div class="wd-subbar">
+        <button class="wd-add-btn" onclick="openAddWikiRelModal('${w.id}')">＋ 添加關聯</button>
+        <span class="muted" style="font-size:11.5px;">${esc(getFolderName(w.folderId))}</span>
+      </div>`;
+
+    const outgoing = (w.relations || []).map(r => {
+      const target = state.wiki.find(x => x.id === r.targetId);
+      return target ? { target, label: r.label || '關聯', dir: 'out' } : null;
+    }).filter(Boolean);
+
+    const incoming = [];
+    state.wiki.forEach(other => {
+      if (other.id === w.id) return;
+      (other.relations || []).forEach(r => {
+        if (r.targetId === w.id && !outgoing.some(o => o.target.id === other.id)) {
+          incoming.push({ target: other, label: r.label || '關聯', dir: 'in' });
+        }
+      });
+    });
+
+    const allRels = [...outgoing, ...incoming];
+    bodyRowsHtml = allRels.length ? allRels.map(item => `
+      <div class="wd-row">
+        <div class="wd-row-head">
+          <div class="row-wrap">
+            <span class="badge" style="background:var(--accent-soft);color:var(--accent);">${esc(item.label)}</span>
+            <strong style="color:var(--primary);cursor:pointer;font-size:14px;" onclick="openWikiDetailPage('${item.target.id}','basic')">${esc(item.target.title)}</strong>
+            <span class="badge">${esc(item.target.category)}</span>
+          </div>
+          <div class="wd-row-actions">
+            <button class="wd-link-act" onclick="openWikiDetailPage('${item.target.id}','basic')">查看</button>
+            ${item.dir === 'out' ? `<button class="wd-link-act wd-link-del" onclick="removeWikiDirectRel('${w.id}','${item.target.id}')">移除</button>` : ''}
+          </div>
+        </div>
+        ${item.target.summary ? `<div class="muted" style="font-size:12.5px;">${esc(item.target.summary)}</div>` : ''}
+      </div>
+    `).join('') : `<div class="empty-box">尚無關聯詞條，點擊上方「＋ 添加關聯」建立連結。</div>`;
+
+  } else if (activeTabDef.isFootprint) {
+    subbarHtml = `
+      <div class="wd-subbar">
+        <span class="muted" style="font-size:12px;">自動彙整時間流事件與作品登場章節</span>
+        <span class="muted" style="font-size:11.5px;">${esc(getFolderName(w.folderId))}</span>
+      </div>`;
+
+    const relatedEvents = state.timeline
+      .filter(ev => Array.isArray(ev.wikiIds) && ev.wikiIds.includes(w.id))
+      .sort((a, b) => (Number(a.weight) || 0) - (Number(b.weight) || 0));
+
+    const mentionedChaps = [];
+    state.books.forEach(b => {
+      (b.volumes || []).forEach(v => {
+        (v.chapters || []).forEach(c => {
+          const text = (c.content || '') + '\n' + (c.outline || '');
+          if (text.includes(w.title)) {
+            mentionedChaps.push({ book: b, vol: v, chap: c });
+          }
+        });
+      });
+    });
+
+    const eventsSection = `
+      <div class="wd-foot-sec-title">關聯時間流（${relatedEvents.length}）</div>
+      ${relatedEvents.length ? relatedEvents.map(ev => {
+        const tr = state.tracks.find(t => t.id === ev.trackId) || { name: '時間線', color: '#2F3E46' };
+        return `
+          <div class="wd-row" style="border-left:3px solid ${esc(tr.color)};">
+            <div class="wd-row-head">
+              <span style="font-size:12px;font-weight:700;color:${esc(tr.color)};">${esc(ev.era || '')}${ev.era && ev.timeLabel ? ' · ' : ''}${esc(ev.timeLabel || '未標記時間')}</span>
+              <span class="badge">${esc(tr.name)}</span>
+            </div>
+            <div style="font-weight:700;color:var(--primary);font-size:13.5px;margin-bottom:2px;">${esc(ev.title)}</div>
+            ${ev.desc ? `<div class="wd-row-val" style="font-size:12.5px;color:var(--muted);">${esc(ev.desc)}</div>` : ''}
+          </div>`;
+      }).join('') : `<div class="wd-row"><span class="wd-row-empty">尚無關聯的時間流事件</span></div>`}
+    `;
+
+    const chapsSection = `
+      <div class="wd-foot-sec-title">出現章節（${mentionedChaps.length}）</div>
+      ${mentionedChaps.length ? mentionedChaps.map(item => `
+        <div class="wd-row" style="cursor:pointer;" onclick="jumpToChapter('${item.book.id}','${item.vol.id}','${item.chap.id}','read')">
+          <div class="wd-row-head" style="margin:0;">
+            <div>
+              <span class="muted" style="font-size:12px;">《${esc(item.book.title)}》${esc(item.vol.title)} · </span>
+              <strong style="color:var(--primary);font-size:13.5px;">${esc(item.chap.title)}</strong>
+            </div>
+            <span style="color:var(--accent);font-size:12px;font-weight:600;">閱讀 →</span>
+          </div>
+        </div>
+      `).join('') : `<div class="wd-row"><span class="wd-row-empty">作品正文與細綱中尚未提及此詞條</span></div>`}
+    `;
+
+    bodyRowsHtml = eventsSection + chapsSection;
+
+  } else {
+    subbarHtml = `
+      <div class="wd-subbar">
+        <button class="wd-add-btn" onclick="openCustomFieldModal('${w.id}','${activeTabId}')">＋ 添加</button>
+        <span class="muted" style="font-size:11.5px;">${esc(getFolderName(w.folderId))}</span>
+      </div>`;
+
+    const rows = [];
+    const fixedFields = activeTabDef.fields || [];
+    fixedFields.forEach(fieldKey => {
+      const val = (w.attrs && w.attrs[fieldKey]) || '';
+      rows.push(`
+        <div class="wd-row">
+          <div class="wd-row-head">
+            <span class="wd-row-label">${esc(fieldKey)}</span>
+            <button class="wd-link-act" onclick="openEditFixedAttrModal('${w.id}','${esc(fieldKey)}')">編輯</button>
+          </div>
+          <div class="wd-row-val">${val.trim() ? esc(val) : `<span class="wd-row-empty">尚未填寫</span>`}</div>
+        </div>
+      `);
+    });
+
+    if (activeTabDef.includeBody) {
+      const bodyLabel = w.category === '角色' ? '人物小傳' : '詳細設定內文';
+      rows.push(`
+        <div class="wd-row">
+          <div class="wd-row-head">
+            <span class="wd-row-label">${bodyLabel}</span>
+            <button class="wd-link-act" onclick="openEditWikiBodyModal('${w.id}')">編輯</button>
+          </div>
+          <div class="wd-row-val">${(w.body || '').trim() ? esc(w.body) : `<span class="wd-row-empty">尚未填寫詳細內文</span>`}</div>
+        </div>
+      `);
+    }
+
+    const customList = (w.customFields && Array.isArray(w.customFields[activeTabId])) ? w.customFields[activeTabId] : [];
+    customList.forEach(cf => {
+      rows.push(`
+        <div class="wd-row">
+          <div class="wd-row-head">
+            <span class="wd-row-label">${esc(cf.label)}</span>
+            <div class="wd-row-actions">
+              <button class="wd-link-act" onclick="openCustomFieldModal('${w.id}','${activeTabId}','${cf.id}')">編輯</button>
+              <button class="wd-link-act wd-link-del" onclick="deleteCustomField('${w.id}','${activeTabId}','${cf.id}')">刪除</button>
+            </div>
+          </div>
+          <div class="wd-row-val">${(cf.value || '').trim() ? esc(cf.value) : `<span class="wd-row-empty">尚未填寫</span>`}</div>
+        </div>
+      `);
+    });
+
+    bodyRowsHtml = rows.length ? rows.join('') : `<div class="empty-box">此分頁尚無欄位，點擊上方「＋ 添加」新增個人化欄位。</div>`;
+  }
+
+  return `
+    <div class="wd-shell">
+      <div class="wd-banner" style="background:${esc(schema.color)};">
+        <div class="wd-top-actions">
+          <button class="wd-ghost-btn" onclick="closeWikiDetailPage()">← 返回設定集</button>
+          <div class="row-wrap">
+            <button class="wd-ghost-btn" onclick="openWikiEditModal('${w.id}')">編輯詞條</button>
+            <button class="wd-ghost-btn" onclick="deleteWiki('${w.id}')">刪除</button>
+          </div>
+        </div>
+        <div class="wd-hero-info">
+          <div class="wd-title-row">
+            <h2 class="wd-title">${esc(w.title)}</h2>
+            <span class="wd-cat-tag">${esc(w.category)}</span>
+          </div>
+          <div class="wd-summary">${esc(w.summary || '（暫無一句話摘要，點擊右上角「編輯詞條」補充）')}</div>
+        </div>
+        <div class="wd-tabs">${tabsHtml}</div>
+      </div>
+      ${subbarHtml}
+      <div class="wd-rows">${bodyRowsHtml}</div>
+    </div>
+  `;
+}
+
+function openEditFixedAttrModal(wikiId, fieldKey) {
+  const w = state.wiki.find(x => x.id === wikiId);
+  if (!w) return;
+  const curVal = (w.attrs && w.attrs[fieldKey]) || '';
+  showModal(`編輯「${esc(fieldKey)}」`, `
+    <label class="sec-label">${esc(fieldKey)}</label>
+    <textarea id="efa-val" class="textarea" rows="3">${esc(curVal)}</textarea>
+    <div style="text-align:right;margin-top:12px;">
+      <button class="btn btn-primary" onclick="saveFixedAttr('${wikiId}','${esc(fieldKey)}')">儲存</button>
+    </div>
+  `);
+  setTimeout(() => document.getElementById('efa-val')?.focus(), 40);
+}
+
+function saveFixedAttr(wikiId, fieldKey) {
+  const w = state.wiki.find(x => x.id === wikiId);
+  if (!w) return;
+  w.attrs = w.attrs || {};
+  w.attrs[fieldKey] = (document.getElementById('efa-val')?.value || '').trim();
+  saveState();
+  closeModal();
+  render();
+}
+
+function openEditWikiBodyModal(wikiId) {
+  const w = state.wiki.find(x => x.id === wikiId);
+  if (!w) return;
+  const label = w.category === '角色' ? '人物小傳' : '詳細設定內文';
+  showModal(`編輯${label}`, `
+    <textarea id="ewb-val" class="textarea" rows="5">${esc(w.body || '')}</textarea>
+    <div style="text-align:right;margin-top:12px;">
+      <button class="btn btn-primary" onclick="saveWikiBody('${wikiId}')">儲存</button>
+    </div>
+  `);
+  setTimeout(() => document.getElementById('ewb-val')?.focus(), 40);
+}
+
+function saveWikiBody(wikiId) {
+  const w = state.wiki.find(x => x.id === wikiId);
+  if (!w) return;
+  w.body = (document.getElementById('ewb-val')?.value || '').trim();
+  saveState();
+  closeModal();
+  render();
+}
+
+function openCustomFieldModal(wikiId, tabId, cfId) {
+  const w = state.wiki.find(x => x.id === wikiId);
+  if (!w) return;
+  w.customFields = w.customFields || {};
+  const list = Array.isArray(w.customFields[tabId]) ? w.customFields[tabId] : [];
+  const existing = cfId ? list.find(x => x.id === cfId) : null;
+
+  showModal(existing ? '編輯個人化欄位' : '新增個人化欄位', `
+    <label class="sec-label">欄位標題</label>
+    <input id="cf-label" class="input" style="margin-bottom:8px;" value="${esc(existing ? existing.label : '')}" placeholder="例如：口頭禪、禁忌事項、代表名言..." />
+    <label class="sec-label">欄位內容</label>
+    <textarea id="cf-value" class="textarea" rows="3" placeholder="輸入詳細內容...">${esc(existing ? existing.value : '')}</textarea>
+    <div style="text-align:right;margin-top:12px;">
+      <button class="btn btn-primary" onclick="saveCustomField('${wikiId}','${tabId}','${cfId || ''}')">儲存欄位</button>
+    </div>
+  `);
+  setTimeout(() => document.getElementById('cf-label')?.focus(), 40);
+}
+
+function saveCustomField(wikiId, tabId, cfId) {
+  const w = state.wiki.find(x => x.id === wikiId);
+  if (!w) return;
+  const label = (document.getElementById('cf-label')?.value || '').trim();
+  const value = (document.getElementById('cf-value')?.value || '').trim();
+  if (!label) return alert('請輸入欄位標題');
+  w.customFields = w.customFields || {};
+  w.customFields[tabId] = Array.isArray(w.customFields[tabId]) ? w.customFields[tabId] : [];
+  if (cfId) {
+    const item = w.customFields[tabId].find(x => x.id === cfId);
+    if (item) { item.label = label; item.value = value; }
+  } else {
+    w.customFields[tabId].push({ id: uid('cf'), label, value });
+  }
+  saveState();
+  closeModal();
+  render();
+}
+
+function deleteCustomField(wikiId, tabId, cfId) {
+  if (!confirm('確定刪除此個人化欄位？')) return;
+  const w = state.wiki.find(x => x.id === wikiId);
+  if (!w || !w.customFields || !Array.isArray(w.customFields[tabId])) return;
+  w.customFields[tabId] = w.customFields[tabId].filter(x => x.id !== cfId);
+  saveState();
+  render();
+}
+
+function openAddWikiRelModal(wikiId) {
+  const w = state.wiki.find(x => x.id === wikiId);
+  if (!w) return;
+  const others = state.wiki.filter(x => x.id !== wikiId);
+  if (!others.length) return alert('目前尚無其他設定詞條可建立關聯');
+  const opts = others.map(o => `<option value="${o.id}">${esc(o.title)}（${esc(o.category)}）</option>`).join('');
+  showModal('添加雙向關聯詞條', `
+    <label class="sec-label">選擇關聯詞條</label>
+    <select id="awr-target" class="select" style="margin-bottom:8px;">${opts}</select>
+    <label class="sec-label">關係標籤</label>
+    <input id="awr-label" class="input" placeholder="例如：昔日同門、持有者、宿敵、據點..." />
+    <div style="text-align:right;margin-top:12px;">
+      <button class="btn btn-primary" onclick="saveWikiDirectRel('${wikiId}')">確定添加</button>
+    </div>
+  `);
+}
+
+function saveWikiDirectRel(wikiId) {
+  const w = state.wiki.find(x => x.id === wikiId);
+  const targetId = document.getElementById('awr-target')?.value;
+  const label = (document.getElementById('awr-label')?.value || '').trim() || '關聯';
+  const target = state.wiki.find(x => x.id === targetId);
+  if (!w || !target) return;
+  w.relations = (w.relations || []).filter(r => r.targetId !== targetId);
+  w.relations.push({ targetId, label });
+  target.relations = target.relations || [];
+  if (!target.relations.some(r => r.targetId === wikiId)) {
+    target.relations.push({ targetId: wikiId, label });
+  }
+  saveState();
+  closeModal();
+  render();
+}
+
+function removeWikiDirectRel(wikiId, targetId) {
+  const w = state.wiki.find(x => x.id === wikiId);
+  if (!w) return;
+  w.relations = (w.relations || []).filter(r => r.targetId !== targetId);
+  saveState();
+  render();
+}
+
+/* Relationship Graph */
+function renderRelationshipGraph() {
+  const chars = state.wiki.filter(w => w.category === '角色' && matchFolder(w.folderId));
+  if (!chars.length) {
+    return `<div class="card empty-box">目前資料夾尚無「角色」分類詞條可繪製關係圖譜。</div>`;
+  }
+
+  const W = 600, H = 340;
+  const cols = Math.max(2, Math.ceil(Math.sqrt(chars.length)));
+  const nodes = chars.map((c, idx) => {
+    const saved = state.graphState.nodePos[c.id];
+    const row = Math.floor(idx / cols);
+    const col = idx % cols;
+    const x = saved ? saved.x : (130 + col * ((W - 260) / Math.max(1, cols - 1)));
+    const y = saved ? saved.y : (95 + row * 120);
+    return { ...c, x, y };
+  });
+
+  const nodeMap = {};
+  nodes.forEach(n => { nodeMap[n.id] = n; });
+
+  const edges = [];
+  const seenPairs = new Set();
+  nodes.forEach(n => {
+    (n.relations || []).forEach(r => {
+      const target = nodeMap[r.targetId];
+      if (!target || target.id === n.id) return;
+      const pairKey = [n.id, target.id].sort().join('__');
+      if (seenPairs.has(pairKey)) return;
+      seenPairs.add(pairKey);
+      const rev = (target.relations || []).find(x => x.targetId === n.id);
+      const label = rev && rev.label !== r.label ? `${r.label} / ${rev.label}` : r.label;
+      edges.push({ from: n, to: target, label });
+    });
+  });
+
+  const gs = state.graphState;
+  const edgeSvg = edges.map(e => {
+    const mx = (e.from.x + e.to.x) / 2;
+    const my = (e.from.y + e.to.y) / 2;
+    return `
+      <line x1="${e.from.x}" y1="${e.from.y}" x2="${e.to.x}" y2="${e.to.y}" stroke="#B8AFA2" stroke-width="1.6" />
+      <rect x="${mx - 36}" y="${my - 10}" width="72" height="18" rx="6" fill="#FFFDF9" stroke="#E5DDD0" />
+      <text x="${mx}" y="${my + 3}" text-anchor="middle" font-size="10.5" fill="#6C757D">${esc(e.label || '關聯')}</text>
+    `;
+  }).join('');
+
+  const nodeSvg = nodes.map(n => `
+    <g class="g-node" data-id="${n.id}" transform="translate(${n.x},${n.y})" style="cursor:grab;">
+      <circle r="24" fill="#2F3E46" stroke="#E07A5F" stroke-width="2.5" />
+      <text y="4" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFDF9">${esc(n.title.slice(0, 4))}</text>
+      <text y="38" text-anchor="middle" font-size="11" font-weight="600" fill="#2B2D42">${esc(n.title)}</text>
+    </g>
+  `).join('');
+
+  return `
+    <div class="muted" style="margin-bottom:6px;">僅顯示「角色」關係圖（可拖曳節點位置、縮放與重置，點擊節點進入角色詳細頁）</div>
+    <div class="graph-box" id="graph-box">
+      <svg id="rel-svg" viewBox="0 0 ${W} ${H}">
+        <g id="graph-viewport" transform="translate(${gs.tx},${gs.ty}) scale(${gs.scale})">
+          ${edgeSvg}
+          ${nodeSvg}
+        </g>
+      </svg>
+      <div class="graph-controls">
+        <button class="btn btn-xs" onclick="zoomGraph(1.2)">＋</button>
+        <button class="btn btn-xs" onclick="zoomGraph(0.83)">－</button>
+        <button class="btn btn-xs" onclick="resetGraphView()">重置</button>
+      </div>
+    </div>`;
+}
+
+function zoomGraph(factor) {
+  state.graphState.scale = Math.max(0.5, Math.min(2.4, state.graphState.scale * factor));
+  saveState();
+  const area = document.getElementById('wiki-dynamic-area');
+  if (area) { area.innerHTML = renderRelationshipGraph(); initGraphInteractions(); }
+}
+
+function resetGraphView() {
+  state.graphState = { scale: 1, tx: 0, ty: 0, nodePos: {} };
+  saveState();
+  const area = document.getElementById('wiki-dynamic-area');
+  if (area) { area.innerHTML = renderRelationshipGraph(); initGraphInteractions(); }
+}
+
+function initGraphInteractions() {
+  const svg = document.getElementById('rel-svg');
+  if (!svg) return;
+  let draggingNodeId = null;
+  let panning = false;
+  let startPt = { x: 0, y: 0 };
+  let moved = false;
+
+  const getSvgCoords = (clientX, clientY) => {
+    const rect = svg.getBoundingClientRect();
+    return {
+      x: (clientX - rect.left) * (600 / rect.width),
+      y: (clientY - rect.top) * (340 / rect.height)
+    };
+  };
+
+  svg.onpointerdown = (e) => {
+    const gNode = e.target.closest('.g-node');
+    moved = false;
+    if (gNode) {
+      draggingNodeId = gNode.getAttribute('data-id');
+      svg.setPointerCapture(e.pointerId);
+    } else {
+      panning = true;
+      startPt = { x: e.clientX - state.graphState.tx, y: e.clientY - state.graphState.ty };
+      svg.setPointerCapture(e.pointerId);
+    }
+  };
+
+  svg.onpointermove = (e) => {
+    if (!draggingNodeId && !panning) return;
+    moved = true;
+    if (draggingNodeId) {
+      const pt = getSvgCoords(e.clientX, e.clientY);
+      const nx = (pt.x - state.graphState.tx) / state.graphState.scale;
+      const ny = (pt.y - state.graphState.ty) / state.graphState.scale;
+      state.graphState.nodePos[draggingNodeId] = { x: Math.round(nx), y: Math.round(ny) };
+      const nodeEl = svg.querySelector(`.g-node[data-id="${draggingNodeId}"]`);
+      if (nodeEl) nodeEl.setAttribute('transform', `translate(${nx},${ny})`);
+    } else if (panning) {
+      state.graphState.tx = e.clientX - startPt.x;
+      state.graphState.ty = e.clientY - startPt.y;
+      const vp = document.getElementById('graph-viewport');
+      if (vp) vp.setAttribute('transform', `translate(${state.graphState.tx},${state.graphState.ty}) scale(${state.graphState.scale})`);
+    }
+  };
+
+  svg.onpointerup = () => {
+    if (draggingNodeId && !moved) openWikiDetailPage(draggingNodeId, 'basic');
+    if (moved) {
+      saveState();
+      const area = document.getElementById('wiki-dynamic-area');
+      if (area && state.wikiView === 'graph') { area.innerHTML = renderRelationshipGraph(); initGraphInteractions(); }
+    }
+    draggingNodeId = null;
+    panning = false;
+  };
+}
+
+/* ======================== BOOKS MODULE ======================== */
+function renderBooksModule() {
+  const bv = state.bookView;
+  if (bv.bookId && bv.chapId) {
+    return bv.mode === 'edit' ? renderChapterEdit() : renderChapterRead();
+  }
+  if (bv.bookId) {
+    return renderBookDetail();
+  }
+
+  const books = state.books.filter(b => matchFolder(b.folderId));
+  return `
+    <div class="row-between" style="margin-bottom:10px;">
+      <span style="font-weight:700;font-size:15px;color:var(--primary);">作品櫃（${books.length} 部）</span>
+      <button class="btn btn-accent btn-sm" onclick="openBookModal()">＋ 新增作品</button>
+    </div>
+    ${books.length ? books.map(b => {
+      let chCount = 0, doneCount = 0, words = 0;
+      (b.volumes || []).forEach(v => (v.chapters || []).forEach(c => {
+        chCount++;
+        words += countWords(c.content);
+        if (c.status === 'done') doneCount++;
+      }));
+      const pct = chCount ? Math.round((doneCount / chCount) * 100) : 0;
+      return `
+        <div class="card" style="cursor:pointer;" onclick="openBookCatalog('${b.id}')">
+          <div class="card-header">
+            <div class="card-title">《${esc(b.title)}》</div>
+            <span class="badge">${esc(getFolderName(b.folderId))}</span>
+          </div>
+          ${b.desc ? `<div class="muted" style="margin-bottom:8px;">${esc(b.desc)}</div>` : ''}
+          <div class="row-between" style="font-size:12.5px;">
+            <span>總字數：<strong>${words.toLocaleString()}</strong> 字</span>
+            <span>完稿：${doneCount} / ${chCount} 章（${pct}%）</span>
+          </div>
+          <div class="prog-wrap"><div class="prog-fill done" style="width:${pct}%"></div></div>
+        </div>`;
+    }).join('') : `<div class="card empty-box">此資料夾尚無作品，點擊右上角「＋ 新增作品」開始建立。</div>`}
+  `;
+}
+
+let bookStatusFilter = 'all';
+
+function openBookCatalog(bookId) {
+  state.activeTab = 'books';
+  state.bookView = { bookId, chapId: null, mode: 'read', returnToTimeline: false };
+  bookStatusFilter = 'all';
+  saveState();
+  render();
+}
+
+function jumpToChapter(bookId, volId, chapId, mode, fromTimeline = false) {
+  state.activeTab = 'books';
+  state.bookView = { bookId, chapId, mode: mode || 'read', returnToTimeline: !!fromTimeline };
+  if (mode === 'edit') {
+    state.lastEdited = { bookId, volId, chapId };
+  }
+  saveState();
+  render();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+function renderBookDetail() {
+  const book = state.books.find(b => b.id === state.bookView.bookId);
+  if (!book) {
+    state.bookView.bookId = null;
+    return renderBooksModule();
+  }
+
+  let totalChaps = 0, doneChaps = 0, totalWords = 0;
+  (book.volumes || []).forEach(v => (v.chapters || []).forEach(c => {
+    totalChaps++;
+    totalWords += countWords(c.content);
+    if (c.status === 'done') doneChaps++;
+  }));
+
+  const statusTabs = [
+    ['all', '全部'],
+    ['idea', '構思中'],
+    ['draft', '草稿'],
+    ['revise', '修訂中'],
+    ['done', '已完成']
+  ].map(([k, lbl]) =>
+    `<button class="pill ${bookStatusFilter === k ? 'active' : ''}" onclick="setBookStatusFilter('${k}')">${lbl}</button>`
+  ).join('');
+
+  const volsHtml = (book.volumes || []).map(v => {
+    const chaps = (v.chapters || []).filter(c => bookStatusFilter === 'all' || c.status === bookStatusFilter);
+    return `
+      <div class="card">
+        <div class="card-header" style="border-bottom:1px solid var(--border);padding-bottom:8px;">
+          <div style="font-weight:700;color:var(--primary);font-size:14.5px;">${esc(v.title)}</div>
+          <div class="row-wrap">
+            <button class="btn btn-xs" onclick="openExportVolumeModal('${book.id}','${v.id}')">匯出本卷</button>
+            <button class="btn btn-xs" onclick="renameVolume('${book.id}','${v.id}')">改名</button>
+            <button class="btn btn-accent btn-xs" onclick="addChapter('${book.id}','${v.id}')">＋ 章節</button>
+          </div>
+        </div>
+        ${chaps.length ? chaps.map((c, cIdx) => {
+          const w = countWords(c.content);
+          const g = Number(c.goal) || 0;
+          const pct = g > 0 ? Math.min(100, Math.round((w / g) * 100)) : 0;
+          return `
+            <div style="padding:9px 0;border-bottom:1px dashed var(--border);">
+              <div class="row-between">
+                <div class="row-wrap" style="cursor:pointer;flex:1;" onclick="jumpToChapter('${book.id}','${v.id}','${c.id}','read')">
+                  <span style="font-weight:700;color:var(--primary);">${esc(c.title)}</span>
+                  ${statusBadgeHtml(c.status)}
+                </div>
+                <div class="row-wrap">
+                  <button class="btn btn-xs" onclick="moveChapter('${book.id}','${v.id}',${cIdx},-1)">↑</button>
+                  <button class="btn btn-xs" onclick="moveChapter('${book.id}','${v.id}',${cIdx},1)">↓</button>
+                  <button class="btn btn-primary btn-xs" onclick="jumpToChapter('${book.id}','${v.id}','${c.id}','edit')">寫作</button>
+                  <button class="btn btn-xs" style="color:#B84A2E;" onclick="deleteChapter('${book.id}','${v.id}','${c.id}')">刪</button>
+                </div>
+              </div>
+              <div class="row-between" style="font-size:11.5px;color:var(--muted);margin-top:4px;">
+                <span>${w.toLocaleString()} 字${g > 0 ? ` / 目標 ${g.toLocaleString()} 字（${pct}%）` : ''}</span>
+                <span>${esc(c.updatedAt || '')}</span>
+              </div>
+              ${g > 0 ? `<div class="prog-wrap" style="height:5px;margin:4px 0 0;"><div class="prog-fill ${w >= g ? 'done' : ''}" style="width:${pct}%"></div></div>` : ''}
+            </div>`;
+        }).join('') : `<div class="muted" style="padding:10px 0;">此篩選條件下尚無章節。</div>`}
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="row-between" style="margin-bottom:10px;">
+      <button class="btn btn-sm" onclick="closeBookCatalog()">← 作品列表</button>
+      <div class="row-wrap">
+        <button class="btn btn-sm" onclick="openExportBookModal('${book.id}')">匯出全書</button>
+        <button class="btn btn-sm" onclick="openBookModal('${book.id}')">編輯書訊</button>
+        <button class="btn btn-primary btn-sm" onclick="addVolume('${book.id}')">＋ 新增分卷</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">《${esc(book.title)}》</div>
+        <span class="badge">${esc(getFolderName(book.folderId))}</span>
+      </div>
+      ${book.desc ? `<div class="muted" style="margin-bottom:6px;">${esc(book.desc)}</div>` : ''}
+      <div style="font-size:12.5px;color:var(--primary);font-weight:600;">
+        已完成 ${doneChaps} / ${totalChaps} 章 · 全書累計 ${totalWords.toLocaleString()} 字
+      </div>
+    </div>
+    <div class="pills-row">${statusTabs}</div>
+    ${volsHtml}
+  `;
+}
+
+function setBookStatusFilter(st) {
+  bookStatusFilter = st;
+  render();
+}
+
+function closeBookCatalog() {
+  state.bookView = { bookId: null, chapId: null, mode: 'read', returnToTimeline: false };
+  render();
+}
+
+function renderChapterRead() {
+  const ctx = findChapterContext(state.bookView.bookId, null, state.bookView.chapId);
+  if (!ctx) {
+    state.bookView.chapId = null;
+    return renderBookDetail();
+  }
+  const { book, vol, chap } = ctx;
+  const allChaps = [];
+  (book.volumes || []).forEach(v => (v.chapters || []).forEach(c => allChaps.push({ vol: v, chap: c })));
+  const idx = allChaps.findIndex(x => x.chap.id === chap.id);
+  const prev = idx > 0 ? allChaps[idx - 1] : null;
+  const next = idx >= 0 && idx < allChaps.length - 1 ? allChaps[idx + 1] : null;
+
+  const wikiTerms = state.wiki
+    .filter(w => w.title && w.title.trim().length >= 2)
+    .sort((a, b) => b.title.length - a.title.length);
+
+  let htmlContent = esc(chap.content || '（本章尚無正文內容）');
+  htmlContent = htmlContent.replace(/\[\[([^\]]+)\]\]/g, (_, name) => {
+    const found = state.wiki.find(w => w.title === name.trim());
+    if (found) return `<span class="wiki-link" onclick="openWikiDetailPage('${found.id}','basic')">${esc(name)}</span>`;
+    return `<span style="color:var(--accent);font-weight:600;">[[${esc(name)}]]</span>`;
+  });
+
+  wikiTerms.forEach(w => {
+    const escapedTerm = esc(w.title).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(?![^<]*>)(${escapedTerm})`, 'g');
+    htmlContent = htmlContent.replace(regex, `<span class="wiki-link" onclick="openWikiDetailPage('${w.id}','basic')">$1</span>`);
+  });
+
+  const backBtn = state.bookView.returnToTimeline
+    ? `<button class="btn btn-sm" onclick="returnFromReadToTimeline()">← 返回時間流</button>`
+    : `<button class="btn btn-sm" onclick="openBookCatalog('${book.id}')">← 目錄</button>`;
+
+  return `
+    <div class="row-between" style="margin-bottom:10px;">
+      ${backBtn}
+      <button class="btn btn-primary btn-sm" onclick="jumpToChapter('${book.id}','${vol.id}','${chap.id}','edit')">切換寫作模式</button>
+    </div>
+    <div class="card">
+      <div class="muted" style="font-size:12px;">《${esc(book.title)}》· ${esc(vol.title)}</div>
+      <div class="row-between" style="margin:4px 0 8px;">
+        <h2 style="margin:0;font-size:17px;color:var(--primary);">${esc(chap.title)}</h2>
+        ${statusBadgeHtml(chap.status)}
+      </div>
+      <div class="muted" style="font-size:12px;">字數：${countWords(chap.content).toLocaleString()} 字 · 更新於 ${esc(chap.updatedAt || '')}</div>
+    </div>
+    <div class="reader-paper">${htmlContent}</div>
+    <div class="row-between" style="margin-top:12px;">
+      ${prev ? `<button class="btn btn-sm" onclick="jumpToChapter('${book.id}','${prev.vol.id}','${prev.chap.id}','read')">← 上一章</button>` : '<span></span>'}
+      ${next ? `<button class="btn btn-sm" onclick="jumpToChapter('${book.id}','${next.vol.id}','${next.chap.id}','read')">下一章 →</button>` : '<span></span>'}
+    </div>
+  `;
+}
+
+function returnFromReadToTimeline() {
+  state.bookView = { bookId: null, chapId: null, mode: 'read', returnToTimeline: false };
+  switchTab('timeline');
+}
+
+function renderChapterEdit() {
+  const ctx = findChapterContext(state.bookView.bookId, null, state.bookView.chapId);
+  if (!ctx) {
+    state.bookView.chapId = null;
+    return renderBookDetail();
+  }
+  const { book, vol, chap } = ctx;
+  const words = countWords(chap.content);
+  const goal = Number(chap.goal) || 0;
+  const pct = goal > 0 ? Math.min(100, Math.round((words / goal) * 100)) : 0;
+  const reached = goal > 0 && words >= goal;
+  const snapCount = (chap.snapshots || []).length;
+
+  const statusBtns = [
+    ['idea', '構思中'],
+    ['draft', '草稿'],
+    ['revise', '修訂中'],
+    ['done', '已完成']
+  ].map(([k, lbl]) =>
+    `<button class="pill ${chap.status === k ? 'active' : ''}" onclick="setChapStatus('${book.id}','${vol.id}','${chap.id}','${k}')">${lbl}</button>`
+  ).join('');
+
+  return `
+    <div class="row-between" style="margin-bottom:8px;">
+      <button class="btn btn-sm" onclick="jumpToChapter('${book.id}','${vol.id}','${chap.id}','read')">完成 / 閱讀</button>
+      <div class="row-wrap">
+        <button class="btn btn-sm" onclick="openSnapshotModal('${book.id}','${vol.id}','${chap.id}')">快照${snapCount ? `（${snapCount}）` : ''}</button>
+        <button class="btn btn-accent btn-sm" onclick="openQuickLookupModal()">速查設定</button>
+      </div>
+    </div>
+
+    <div class="card" style="padding:11px 12px;">
+      <input class="input" style="font-weight:700;font-size:15px;margin-bottom:8px;"
+        value="${esc(chap.title)}" oninput="updateChapField('${book.id}','${vol.id}','${chap.id}','title',this.value)" />
+      <div class="row-between" style="margin-bottom:6px;">
+        <div class="pills-row" style="margin:0;">${statusBtns}</div>
+        <button class="btn btn-xs" onclick="openGoalModal('${book.id}','${vol.id}','${chap.id}')">
+          目標：${goal > 0 ? goal.toLocaleString() + ' 字' : '無上限'}
+        </button>
+      </div>
+      <div class="row-between" style="font-size:12px;" id="editor-word-stats">
+        <span>目前字數：<strong>${words.toLocaleString()}</strong> 字</span>
+        <span style="color:${reached ? 'var(--sage)' : 'var(--accent)'};font-weight:700;">
+          ${goal > 0 ? (reached ? '✓ 已達標（' + pct + '%）' : pct + '%') : ''}
+        </span>
+      </div>
+      ${goal > 0 ? `<div class="prog-wrap"><div id="editor-prog-fill" class="prog-fill ${reached ? 'done' : ''}" style="width:${pct}%"></div></div>` : ''}
+      <details style="margin-top:6px;">
+        <summary class="muted" style="cursor:pointer;font-weight:600;">章節細綱備忘</summary>
+        <textarea class="textarea" rows="2" style="margin-top:6px;" placeholder="記錄本章情節大綱、出場人物與伏筆..."
+          oninput="updateChapField('${book.id}','${vol.id}','${chap.id}','outline',this.value)">${esc(chap.outline || '')}</textarea>
+      </details>
+    </div>
+
+    <textarea id="chap-editor" class="editor-area" placeholder="開始輸入正文（輸入 [[ 可快速呼叫設定詞條）..."
+      oninput="onEditorInput('${book.id}','${vol.id}','${chap.id}',this)"
+      onkeydown="handleAcKey(event)">${esc(chap.content || '')}</textarea>
+
+    <div class="kbd-bar">
+      <button class="kbd-btn" onclick="fmtIndent()">首行縮排</button>
+      <button class="kbd-btn" onclick="insPair('「','」')">「」</button>
+      <button class="kbd-btn" onclick="insPair('『','』')">『』</button>
+      <button class="kbd-btn" onclick="insPair('（','）')">（）</button>
+      <button class="kbd-btn" onclick="insStr('——')">——</button>
+      <button class="kbd-btn" onclick="insStr('……')">……</button>
+      <button class="kbd-btn" onclick="openAcManual()">[[ 插入設定</button>
+      <button class="kbd-btn" onclick="fmtCleanLines()">去多餘空行</button>
+    </div>
+  `;
+}
+
+function updateChapField(bookId, volId, chapId, field, val) {
+  const ctx = findChapterContext(bookId, volId, chapId);
+  if (!ctx) return;
+  ctx.chap[field] = val;
+  ctx.chap.updatedAt = nowStr();
+  state.lastEdited = { bookId, volId, chapId };
+  saveState();
+}
+
+function setChapStatus(bookId, volId, chapId, st) {
+  updateChapField(bookId, volId, chapId, 'status', st);
+  render();
+}
+
+function onEditorInput(bookId, volId, chapId, el) {
+  const val = el.value;
+  updateChapField(bookId, volId, chapId, 'content', val);
+  const ctx = findChapterContext(bookId, volId, chapId);
+  if (ctx) {
+    const w = countWords(val);
+    const g = Number(ctx.chap.goal) || 0;
+    const pct = g > 0 ? Math.min(100, Math.round((w / g) * 100)) : 0;
+    const reached = g > 0 && w >= g;
+    const statsEl = document.getElementById('editor-word-stats');
+    if (statsEl) {
+      statsEl.innerHTML = `<span>目前字數：<strong>${w.toLocaleString()}</strong> 字</span>
+        <span style="color:${reached ? 'var(--sage)' : 'var(--accent)'};font-weight:700;">
+          ${g > 0 ? (reached ? '✓ 已達標（' + pct + '%）' : pct + '%') : ''}
+        </span>`;
+    }
+    const fill = document.getElementById('editor-prog-fill');
+    if (fill) {
+      fill.style.width = pct + '%';
+      fill.className = 'prog-fill' + (reached ? ' done' : '');
+    }
+  }
+
+  const pos = el.selectionStart || 0;
+  const before = val.slice(0, pos);
+  const m = before.match(/\[\[([^\[\]\n]{0,20})$/);
+  if (m) openAcPop(m[1]);
+  else closeAc();
+}
+
+let acQuery = '';
+let acAllFolders = false;
+
+function insStr(str) {
+  const el = document.getElementById('chap-editor');
+  if (!el) return;
+  const s = el.selectionStart, e = el.selectionEnd;
+  el.value = el.value.slice(0, s) + str + el.value.slice(e);
+  el.selectionStart = el.selectionEnd = s + str.length;
+  el.focus();
+  el.dispatchEvent(new Event('input'));
+}
+
+function insPair(left, right) {
+  const el = document.getElementById('chap-editor');
+  if (!el) return;
+  const s = el.selectionStart, e = el.selectionEnd;
+  const sel = el.value.slice(s, e);
+  el.value = el.value.slice(0, s) + left + sel + right + el.value.slice(e);
+  el.selectionStart = el.selectionEnd = sel ? s + left.length + sel.length + right.length : s + left.length;
+  el.focus();
+  el.dispatchEvent(new Event('input'));
+}
+
+function fmtIndent() {
+  const el = document.getElementById('chap-editor');
+  if (!el) return;
+  el.value = el.value.split('\n').map(line => {
+    const trimmed = line.replace(/^[\s　]+/, '');
+    return trimmed ? '　　' + trimmed : '';
+  }).join('\n');
+  el.dispatchEvent(new Event('input'));
+}
+
+function fmtCleanLines() {
+  const el = document.getElementById('chap-editor');
+  if (!el) return;
+  el.value = el.value.replace(/\n{3,}/g, '\n\n').trim();
+  el.dispatchEvent(new Event('input'));
+}
+
+function openAcManual() { insStr('[['); }
+function openAcPop(q) { acQuery = q || ''; renderAcList(); }
+function closeAc() { const r = document.getElementById('ac-root'); if (r) r.innerHTML = ''; }
+function toggleAcScope() { acAllFolders = !acAllFolders; renderAcList(); }
+
+function renderAcList() {
+  const root = document.getElementById('ac-root');
+  if (!root) return;
+  const q = acQuery.toLowerCase();
+  const list = state.wiki.filter(w => {
+    if (!acAllFolders && !matchFolder(w.folderId)) return false;
+    return !q || w.title.toLowerCase().includes(q) || w.category.toLowerCase().includes(q);
+  }).slice(0, 12);
+
+  root.innerHTML = `
+    <div class="ac-pop">
+      <div class="row-between" style="padding:2px 6px 6px;border-bottom:1px solid var(--border);margin-bottom:4px;">
+        <span class="muted" style="font-size:11.5px;">插入設定詞條${acQuery ? `：「${esc(acQuery)}」` : ''}</span>
+        <div class="row-wrap">
+          <button class="btn btn-xs" onclick="toggleAcScope()">${acAllFolders ? '僅限目前資料夾' : '跨資料夾搜尋'}</button>
+          <button class="btn btn-xs" onclick="closeAc()">關閉</button>
+        </div>
+      </div>
+      ${list.length ? list.map(w => `
+        <div class="ac-item" onclick="pickAcWiki('${esc(w.title)}')">
+          <strong>${esc(w.title)}</strong>
+          <span class="badge">${esc(w.category)}</span>
+        </div>`).join('') : `<div class="muted" style="padding:8px;">無符合的設定詞條</div>`}
+    </div>`;
+}
+
+function handleAcKey(e) { if (e.key === 'Escape') closeAc(); }
+
+function pickAcWiki(title) {
+  const el = document.getElementById('chap-editor');
+  if (!el) return;
+  const pos = el.selectionStart || 0;
+  const before = el.value.slice(0, pos);
+  const replaced = before.replace(/\[\[([^\[\]\n]{0,20})$/, `[[${title}]]`);
+  el.value = replaced + el.value.slice(pos);
+  el.selectionStart = el.selectionEnd = replaced.length;
+  closeAc();
+  el.focus();
+  el.dispatchEvent(new Event('input'));
+}
+
+/* ======================== TIMELINE MODULE ======================== */
+function renderTimelineModule() {
+  const trackPills = [
+    `<button class="pill ${state.tlTrackFilter === 'all' ? 'active' : ''}" onclick="setTlTrackFilter('all')">全部軌道</button>`,
+    ...state.tracks.map(t =>
+      `<button class="pill ${state.tlTrackFilter === t.id ? 'active' : ''}" onclick="setTlTrackFilter('${t.id}')">
+        <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${esc(t.color)};margin-right:4px;"></span>${esc(t.name)}
+      </button>`
+    )
+  ].join('');
+
+  return `
+    <div class="row-between" style="margin-bottom:8px;">
+      <div class="search-wrap">
+        <input id="tl-search-input" class="input" type="text" placeholder="搜尋紀元、事件、登場設定或章節..."
+          value="${esc(state.tlSearch)}" oninput="onTlSearchInput(this.value)" />
+        ${state.tlSearch ? `<button class="search-clear" onclick="clearTlSearch()">×</button>` : ''}
+      </div>
+      <button class="btn btn-sm" onclick="openTrackModal()">管理軌道</button>
+      <button class="btn btn-accent btn-sm" onclick="openTlEditModal()">＋ 事件</button>
+    </div>
+    <div class="pills-row">${trackPills}</div>
+    <div id="tl-dynamic-area">${renderTimelineDynamicContent()}</div>
+  `;
+}
+
+function setTlTrackFilter(id) { state.tlTrackFilter = id; render(); }
+
+function onTlSearchInput(val) {
+  state.tlSearch = val;
+  const area = document.getElementById('tl-dynamic-area');
+  if (area) area.innerHTML = renderTimelineDynamicContent();
+  const inp = document.getElementById('tl-search-input');
+  if (inp && inp.parentElement) {
+    let clr = inp.parentElement.querySelector('.search-clear');
+    if (val && !clr) {
+      clr = document.createElement('button');
+      clr.className = 'search-clear';
+      clr.textContent = '×';
+      clr.onclick = clearTlSearch;
+      inp.parentElement.appendChild(clr);
+    } else if (!val && clr) {
+      clr.remove();
+    }
+  }
+}
+
+function clearTlSearch() {
+  state.tlSearch = '';
+  const inp = document.getElementById('tl-search-input');
+  if (inp) { inp.value = ''; inp.focus(); }
+  onTlSearchInput('');
+}
+
+function matchTimelineEvent(ev, kw) {
+  if (!matchFolder(ev.folderId)) return false;
+  if (state.tlTrackFilter !== 'all' && ev.trackId !== state.tlTrackFilter) return false;
+  if (!kw) return true;
+  const q = kw.toLowerCase();
+  if ((ev.era || '').toLowerCase().includes(q)) return true;
+  if ((ev.timeLabel || '').toLowerCase().includes(q)) return true;
+  if ((ev.title || '').toLowerCase().includes(q)) return true;
+  if ((ev.desc || '').toLowerCase().includes(q)) return true;
+  const tr = state.tracks.find(t => t.id === ev.trackId);
+  if (tr && (tr.name || '').toLowerCase().includes(q)) return true;
+  for (const wid of (ev.wikiIds || [])) {
+    const w = state.wiki.find(x => x.id === wid);
+    if (w && ((w.title || '').toLowerCase().includes(q) || (w.category || '').toLowerCase().includes(q))) return true;
+  }
+  for (const ref of (ev.chapterRefs || [])) {
+    const ctx = findChapterContext(ref.bookId, ref.volId, ref.chapId);
+    if (ctx && ((ctx.book.title || '').toLowerCase().includes(q) || (ctx.chap.title || '').toLowerCase().includes(q))) return true;
+  }
+  return false;
+}
+
+function renderTimelineDynamicContent() {
+  const kw = state.tlSearch.trim();
+  const events = state.timeline
+    .filter(ev => matchTimelineEvent(ev, kw))
+    .sort((a, b) => (Number(a.weight) || 0) - (Number(b.weight) || 0));
+
+  if (!events.length) {
+    return `<div class="card empty-box">找不到符合條件的時間流事件，點擊右上角「＋ 事件」新增。</div>`;
+  }
+
+  const eraGroups = [];
+  const eraMap = {};
+  events.forEach(ev => {
+    const eraName = (ev.era || '未分組紀元').trim();
+    if (!eraMap[eraName]) {
+      eraMap[eraName] = { era: eraName, items: [] };
+      eraGroups.push(eraMap[eraName]);
+    }
+    eraMap[eraName].items.push(ev);
+  });
+
+  const allCollapsed = eraGroups.length > 1 && eraGroups.every(g => state.collapsedEras.includes(g.era));
+  const eraControls = eraGroups.length > 1 ? `
+    <div class="row-between" style="margin-bottom:4px;">
+      <span class="muted">共 ${eraGroups.length} 個紀元分段 · ${events.length} 筆事件</span>
+      <button class="btn btn-xs" onclick="toggleAllEras(${allCollapsed ? 'false' : 'true'})">${allCollapsed ? '全部展開' : '全部收合'}</button>
+    </div>` : '';
+
+  const groupsHtml = eraGroups.map(grp => {
+    const isCollapsed = !kw && state.collapsedEras.includes(grp.era);
+    let bodyHtml = '';
+    if (!isCollapsed) {
+      const clusters = [];
+      grp.items.forEach(ev => {
+        const last = clusters[clusters.length - 1];
+        if (last && ((Number(last[0].weight) === Number(ev.weight)) || (last[0].timeLabel && last[0].timeLabel === ev.timeLabel))) {
+          last.push(ev);
+        } else {
+          clusters.push([ev]);
+        }
+      });
+
+      bodyHtml = clusters.map(cluster => {
+        if (cluster.length > 1) {
+          const idsJson = esc(JSON.stringify(cluster.map(x => x.id)));
+          return `
+            <div class="parallel-group">
+              <div class="parallel-head">
+                <span>並行發生（${cluster.length} 條支線 · ${esc(cluster[0].timeLabel || '')}）</span>
+                <button class="btn btn-xs btn-primary" onclick='openParallelCompareModal(${idsJson})'>並排對照</button>
+              </div>
+              ${cluster.map(ev => renderSingleTlCard(ev, true)).join('')}
+            </div>`;
+        }
+        return renderSingleTlCard(cluster[0], false);
+      }).join('');
+    }
+
+    return `
+      <div class="era-header" onclick="toggleEraCollapse('${esc(grp.era)}')">
+        <span>${isCollapsed ? '▸' : '▾'} ${esc(grp.era)}</span>
+        <span class="badge">${grp.items.length} 件</span>
+      </div>
+      ${bodyHtml}
+    `;
+  }).join('');
+
+  return eraControls + groupsHtml;
+}
+
+function renderSingleTlCard(ev, isParallel) {
+  const track = state.tracks.find(t => t.id === ev.trackId) || state.tracks[0] || { name: '時間線', color: '#2F3E46' };
+  const wikiBadges = (ev.wikiIds || []).map(wid => {
+    const w = state.wiki.find(x => x.id === wid);
+    if (!w) return '';
+    return `<span class="badge" style="cursor:pointer;background:var(--accent-soft);color:var(--accent);" onclick="openWikiDetailPage('${w.id}','basic')">${esc(w.title)}</span>`;
+  }).filter(Boolean).join('');
+
+  const chapBadges = (ev.chapterRefs || []).map(ref => {
+    const ctx = findChapterContext(ref.bookId, ref.volId, ref.chapId);
+    if (!ctx) return '';
+    return `<span class="badge" style="cursor:pointer;background:var(--sage-soft);color:#3A6351;" onclick="jumpToChapter('${ctx.book.id}','${ctx.vol.id}','${ctx.chap.id}','read',true)">${esc(ctx.chap.title)}</span>`;
+  }).filter(Boolean).join('');
+
+  return `
+    <div class="tl-card" style="border-left-color:${esc(track.color)};">
+      <div class="row-between" style="margin-bottom:4px;">
+        <div class="row-wrap">
+          <span style="font-size:12px;font-weight:700;color:${esc(track.color)};">${esc(ev.timeLabel || '未標記時間')}</span>
+          <span class="badge" style="background:${esc(track.color)}18;color:${esc(track.color)};">${esc(track.name)}</span>
+          ${isParallel ? `<span class="badge st-draft">並行視角</span>` : ''}
+        </div>
+        <div class="row-wrap">
+          <button class="btn btn-xs" onclick="addParallelEvent('${ev.id}')">＋並行</button>
+          <button class="btn btn-xs" onclick="openTlEditModal('${ev.id}')">編輯</button>
+          <button class="btn btn-xs" style="color:#B84A2E;" onclick="deleteTimelineEvent('${ev.id}')">刪</button>
+        </div>
+      </div>
+      <div style="font-weight:700;font-size:14.5px;color:var(--primary);margin-bottom:4px;">${esc(ev.title)}</div>
+      ${ev.desc ? `<div style="font-size:13px;color:var(--text);margin-bottom:6px;">${esc(ev.desc)}</div>` : ''}
+      ${(wikiBadges || chapBadges) ? `<div class="row-wrap" style="margin-top:4px;">${wikiBadges}${chapBadges}</div>` : ''}
+    </div>`;
+}
+
+function toggleEraCollapse(era) {
+  const idx = state.collapsedEras.indexOf(era);
+  if (idx >= 0) state.collapsedEras.splice(idx, 1);
+  else state.collapsedEras.push(era);
+  saveState();
+  const area = document.getElementById('tl-dynamic-area');
+  if (area) area.innerHTML = renderTimelineDynamicContent();
+}
+
+function toggleAllEras(collapse) {
+  if (!collapse) state.collapsedEras = [];
+  else state.collapsedEras = Array.from(new Set(state.timeline.map(e => (e.era || '未分組紀元').trim())));
+  saveState();
+  const area = document.getElementById('tl-dynamic-area');
+  if (area) area.innerHTML = renderTimelineDynamicContent();
+}
+
+/* ======================== BACKUP MODULE ======================== */
+function renderBackupModule() {
+  const stats = `作品資料夾 ${state.folders.length} 個 · 設定詞條 ${state.wiki.length} 筆 · 作品 ${state.books.length} 部 · 時間事件 ${state.timeline.length} 筆 · 靈感便籤 ${state.ideas.length} 則`;
+  return `
+    <div class="card">
+      <div class="card-title" style="margin-bottom:6px;">資料統計與本地儲存</div>
+      <div class="muted" style="margin-bottom:12px;">${stats}</div>
+      <div class="row-wrap">
+        <button class="btn btn-primary" onclick="exportFullBackup()">匯出完整 JSON 備份</button>
+        <label class="btn" style="cursor:pointer;">
+          匯入 JSON 備份還原
+          <input type="file" accept=".json,application/json" style="display:none;" onchange="importFullBackup(event)" />
+        </label>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:6px;">安裝為裝置應用程式（PWA）</div>
+      <div class="muted" style="line-height:1.7;">
+        • <strong>Android / Chrome / Edge</strong>：點擊瀏覽器右上角選單，選擇「安裝應用程式」或「加到主畫面」。<br>
+        • <strong>iPhone / iPad Safari</strong>：點擊下方「分享」按鈕，選擇「加入主畫面」。<br>
+        • <strong>電腦桌面</strong>：網址列右側點擊安裝圖示即可獨立視窗運行並支援離線快取。
+      </div>
+      ${deferredInstallPrompt ? `<button class="btn btn-accent" style="margin-top:10px;" onclick="triggerPwaInstall()">立即安裝到裝置</button>` : ''}
+    </div>
+  `;
+}
+
+function exportFullBackup() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `捕夢網_完整備份_${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+}
+
+function importFullBackup(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      state = migrateState(parsed);
+      saveState();
+      render();
+      alert('備份資料還原成功！');
+    } catch (err) {
+      alert('備份檔格式錯誤，無法還原。');
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ======================== MODALS ======================== */
+function showModal(title, bodyHtml) {
+  const root = document.getElementById('modal-root');
+  if (!root) return;
+  root.innerHTML = `
+    <div class="modal-backdrop" onclick="if(event.target===this)closeModal()">
+      <div class="modal-box">
+        <div class="modal-head">
+          <h3 class="modal-title">${title}</h3>
+          <button class="btn btn-xs" onclick="closeModal()">關閉</button>
+        </div>
+        ${bodyHtml}
+      </div>
+    </div>`;
+}
+
+function closeModal() {
+  const root = document.getElementById('modal-root');
+  if (root) root.innerHTML = '';
+}
+
+function openFolderModal() {
+  const listHtml = state.folders.map(f => `
+    <div class="row-between" style="padding:7px 0;border-bottom:1px solid var(--border);">
+      <strong>${esc(stripEmojiPrefix(f.name))}</strong>
+      <div class="row-wrap">
+        <button class="btn btn-xs" onclick="renameFolder('${f.id}')">改名</button>
+        ${state.folders.length > 1 ? `<button class="btn btn-xs" style="color:#B84A2E;" onclick="deleteFolder('${f.id}')">刪除</button>` : ''}
+      </div>
+    </div>`).join('');
+
+  showModal('作品資料夾管理', `
+    <div class="row-between" style="margin-bottom:12px;">
+      <input id="new-folder-name" class="input" placeholder="輸入新資料夾名稱..." />
+      <button class="btn btn-primary" onclick="createFolder()">新增</button>
+    </div>
+    ${listHtml}
+  `);
+}
+
+function createFolder() {
+  const inp = document.getElementById('new-folder-name');
+  const name = stripEmojiPrefix(inp ? inp.value : '');
+  if (!name) return;
+  state.folders.push({ id: uid('f'), name });
+  saveState();
+  renderTopFolderSelect();
+  openFolderModal();
+}
+
+function renameFolder(id) {
+  const f = state.folders.find(x => x.id === id);
+  if (!f) return;
+  const next = prompt('修改資料夾名稱：', stripEmojiPrefix(f.name));
+  if (next && stripEmojiPrefix(next)) {
+    f.name = stripEmojiPrefix(next);
+    saveState();
+    render();
+    openFolderModal();
+  }
+}
+
+function deleteFolder(id) {
+  if (state.folders.length <= 1) return;
+  if (!confirm('確定刪除此資料夾？其下項目將移至第一個資料夾。')) return;
+  const fallback = state.folders.find(x => x.id !== id).id;
+  state.wiki.forEach(w => { if (w.folderId === id) w.folderId = fallback; });
+  state.books.forEach(b => { if (b.folderId === id) b.folderId = fallback; });
+  state.timeline.forEach(t => { if (t.folderId === id) t.folderId = fallback; });
+  state.ideas.forEach(i => { if (i.folderId === id) i.folderId = fallback; });
+  state.folders = state.folders.filter(x => x.id !== id);
+  if (state.folderFilter === id) state.folderFilter = 'all';
+  saveState();
+  render();
+  openFolderModal();
+}
+
+function openQuickIdeaModal() {
+  const defaultF = state.folderFilter !== 'all' ? state.folderFilter : state.folders[0].id;
+  const fOpts = state.folders.map(f => `<option value="${f.id}" ${f.id === defaultF ? 'selected' : ''}>${esc(stripEmojiPrefix(f.name))}</option>`).join('');
+  showModal('速記靈感', `
+    <label class="sec-label">所屬作品資料夾</label>
+    <select id="qi-folder" class="select" style="margin-bottom:10px;">${fOpts}</select>
+    <label class="sec-label">靈感內容</label>
+    <textarea id="qi-text" class="textarea" rows="4" placeholder="隨手記下台詞、伏筆、場景畫面或設定點子..."></textarea>
+    <div style="text-align:right;margin-top:12px;">
+      <button class="btn btn-accent" onclick="saveQuickIdea()">儲存便籤</button>
+    </div>
+  `);
+  setTimeout(() => document.getElementById('qi-text')?.focus(), 50);
+}
+
+function saveQuickIdea() {
+  const text = (document.getElementById('qi-text')?.value || '').trim();
+  const folderId = document.getElementById('qi-folder')?.value || state.folders[0].id;
+  if (!text) return;
+  state.ideas.unshift({ id: uid('i'), folderId, text, createdAt: nowStr() });
+  saveState();
+  closeModal();
+  render();
+}
+
+function openIdeaBoxModal() {
+  const list = state.ideas.filter(i => matchFolder(i.folderId));
+  const ctx = getLatestChapterContext();
+  const itemsHtml = list.length ? list.map(it => `
+    <div class="card" style="padding:10px 12px;">
+      <div style="font-size:13.5px;white-space:pre-wrap;margin-bottom:8px;">${esc(it.text)}</div>
+      <div class="row-between">
+        <span class="muted" style="font-size:11.5px;">${esc(getFolderName(it.folderId))} · ${esc(it.createdAt)}</span>
+        <div class="row-wrap">
+          ${ctx ? `<button class="btn btn-xs" onclick="insertIdeaToChapter('${it.id}','outline')">轉入細綱</button>
+                   <button class="btn btn-xs btn-primary" onclick="insertIdeaToChapter('${it.id}','content')">轉入正文</button>` : ''}
+          <button class="btn btn-xs" style="color:#B84A2E;" onclick="deleteIdea('${it.id}')">刪除</button>
+        </div>
+      </div>
+    </div>`).join('') : `<div class="empty-box">目前沒有靈感便籤。</div>`;
+
+  showModal('靈感便籤箱', `
+    <div class="row-between" style="margin-bottom:10px;">
+      <span class="muted">共 ${list.length} 則靈感</span>
+      <button class="btn btn-accent btn-sm" onclick="openQuickIdeaModal()">＋ 新增速記</button>
+    </div>
+    ${itemsHtml}
+  `);
+}
+
+function insertIdeaToChapter(ideaId, target) {
+  const idea = state.ideas.find(x => x.id === ideaId);
+  const ctx = getLatestChapterContext();
+  if (!idea || !ctx) return;
+  if (target === 'outline') {
+    ctx.chap.outline = (ctx.chap.outline ? ctx.chap.outline + '\n' : '') + '• ' + idea.text;
+  } else {
+    ctx.chap.content = (ctx.chap.content ? ctx.chap.content + '\n\n' : '') + '　　' + idea.text;
+  }
+  ctx.chap.updatedAt = nowStr();
+  saveState();
+  closeModal();
+  jumpToChapter(ctx.book.id, ctx.vol.id, ctx.chap.id, 'edit');
+}
+
+function deleteIdea(id) {
+  state.ideas = state.ideas.filter(x => x.id !== id);
+  saveState();
+  openIdeaBoxModal();
+  render();
+}
+
+let draftWikiRels = [];
+
+function openWikiEditModal(id) {
+  const existing = id ? state.wiki.find(x => x.id === id) : null;
+  const defaultF = existing ? existing.folderId : (state.folderFilter !== 'all' ? state.folderFilter : state.folders[0].id);
+  const cat = existing ? existing.category : (state.wikiCategory !== '全部' ? state.wikiCategory : '角色');
+  draftWikiRels = existing ? JSON.parse(JSON.stringify(existing.relations || [])) : [];
+
+  const fOpts = state.folders.map(f => `<option value="${f.id}" ${f.id === defaultF ? 'selected' : ''}>${esc(stripEmojiPrefix(f.name))}</option>`).join('');
+  const cOpts = Object.keys(state.templates).map(c => `<option value="${esc(c)}" ${c === cat ? 'selected' : ''}>${esc(c)}</option>`).join('');
+  const otherWikis = state.wiki.filter(w => w.id !== id);
+  const targetOpts = otherWikis.map(w => `<option value="${w.id}">${esc(w.title)}（${esc(w.category)}）</option>`).join('');
+
+  showModal(existing ? '編輯設定詞條' : '新增設定詞條', `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div>
+        <label class="sec-label">資料夾</label>
+        <select id="we-folder" class="select">${fOpts}</select>
+      </div>
+      <div>
+        <label class="sec-label">設定分類</label>
+        <select id="we-cat" class="select" onchange="renderWikiAttrInputs('${id || ''}')">${cOpts}</select>
+      </div>
+    </div>
+    <label class="sec-label">詞條名稱</label>
+    <input id="we-title" class="input" style="margin-bottom:8px;" value="${esc(existing ? existing.title : '')}" placeholder="例如：沈星回、霧港觀星台..." />
+    <label class="sec-label">一句話摘要</label>
+    <input id="we-summary" class="input" style="margin-bottom:8px;" value="${esc(existing ? existing.summary : '')}" />
+    <div id="we-attrs-box"></div>
+    <label class="sec-label">詳細設定內文</label>
+    <textarea id="we-body" class="textarea" rows="3" style="margin-bottom:10px;">${esc(existing ? existing.body : '')}</textarea>
+    <label class="sec-label">雙向關聯設定</label>
+    <div class="row-between" style="margin-bottom:6px;">
+      <select id="we-rel-target" class="select" style="flex:1;">${targetOpts || '<option value="">無其他詞條</option>'}</select>
+      <input id="we-rel-label" class="input" style="width:110px;" placeholder="關係標籤" />
+      <button class="btn btn-sm" onclick="addDraftRel()">＋關聯</button>
+    </div>
+    <div id="we-rels-list" class="row-wrap" style="margin-bottom:12px;"></div>
+    <div style="text-align:right;">
+      <button class="btn btn-primary" onclick="saveWikiItem('${id || ''}')">儲存詞條</button>
+    </div>
+  `);
+  renderWikiAttrInputs(id || '');
+  renderDraftRels();
+}
+
+function renderWikiAttrInputs(id) {
+  const cat = document.getElementById('we-cat')?.value || '角色';
+  const existing = id ? state.wiki.find(x => x.id === id) : null;
+  const fields = state.templates[cat] || [];
+  const box = document.getElementById('we-attrs-box');
+  if (!box) return;
+  box.innerHTML = fields.map(f => `
+    <div style="margin-bottom:6px;">
+      <label class="sec-label">${esc(f)}</label>
+      <input class="input we-attr-inp" data-key="${esc(f)}" value="${esc(existing?.attrs?.[f] || '')}" />
+    </div>`).join('');
+}
+
+function addDraftRel() {
+  const targetId = document.getElementById('we-rel-target')?.value;
+  const label = (document.getElementById('we-rel-label')?.value || '').trim() || '關聯';
+  if (!targetId) return;
+  draftWikiRels = draftWikiRels.filter(r => r.targetId !== targetId);
+  draftWikiRels.push({ targetId, label });
+  document.getElementById('we-rel-label').value = '';
+  renderDraftRels();
+}
+
+function removeDraftRel(targetId) {
+  draftWikiRels = draftWikiRels.filter(r => r.targetId !== targetId);
+  renderDraftRels();
+}
+
+function renderDraftRels() {
+  const el = document.getElementById('we-rels-list');
+  if (!el) return;
+  el.innerHTML = draftWikiRels.map(r => {
+    const t = state.wiki.find(x => x.id === r.targetId);
+    return t ? `<span class="badge">${esc(r.label)}：${esc(t.title)} <strong style="cursor:pointer;margin-left:4px;" onclick="removeDraftRel('${r.targetId}')">×</strong></span>` : '';
+  }).join('');
+}
+
+function saveWikiItem(id) {
+  const title = (document.getElementById('we-title')?.value || '').trim();
+  if (!title) return alert('請輸入詞條名稱');
+  const folderId = document.getElementById('we-folder')?.value || state.folders[0].id;
+  const category = document.getElementById('we-cat')?.value || '角色';
+  const summary = (document.getElementById('we-summary')?.value || '').trim();
+  const body = (document.getElementById('we-body')?.value || '').trim();
+  const existing = id ? state.wiki.find(x => x.id === id) : null;
+  const attrs = existing && existing.attrs ? Object.assign({}, existing.attrs) : {};
+  document.querySelectorAll('.we-attr-inp').forEach(inp => {
+    attrs[inp.getAttribute('data-key')] = inp.value.trim();
+  });
+
+  const itemId = id || uid('w');
+  const customFields = existing && existing.customFields ? existing.customFields : { basic: [], ability: [], extra: [] };
+  const record = { id: itemId, folderId, category, title, summary, attrs, customFields, body, relations: draftWikiRels };
+  if (id) {
+    const idx = state.wiki.findIndex(x => x.id === id);
+    if (idx >= 0) state.wiki[idx] = record;
+  } else {
+    state.wiki.unshift(record);
+  }
+
+  draftWikiRels.forEach(r => {
+    const target = state.wiki.find(x => x.id === r.targetId);
+    if (target) {
+      target.relations = target.relations || [];
+      if (!target.relations.some(x => x.targetId === itemId)) {
+        target.relations.push({ targetId: itemId, label: r.label });
+      }
+    }
+  });
+
+  saveState();
+  closeModal();
+  render();
+}
+
+function deleteWiki(id) {
+  if (!confirm('確定刪除此設定詞條？')) return;
+  if (state.wikiDetailId === id) state.wikiDetailId = null;
+  state.wiki = state.wiki.filter(w => w.id !== id);
+  state.wiki.forEach(w => { w.relations = (w.relations || []).filter(r => r.targetId !== id); });
+  saveState();
+  render();
+}
+
+function openTemplateModal() {
+  const html = Object.entries(state.templates).map(([cat, fields]) => `
+    <div style="margin-bottom:8px;">
+      <label class="sec-label">${esc(cat)}（以頓號或逗號分隔欄位）</label>
+      <input class="input tpl-inp" data-cat="${esc(cat)}" value="${esc(fields.join('、'))}" />
+    </div>`).join('');
+  showModal('分類屬性模板設定', `
+    ${html}
+    <div style="text-align:right;margin-top:10px;">
+      <button class="btn btn-primary" onclick="saveTemplates()">儲存模板</button>
+    </div>
+  `);
+}
+
+function saveTemplates() {
+  document.querySelectorAll('.tpl-inp').forEach(inp => {
+    const cat = inp.getAttribute('data-cat');
+    state.templates[cat] = inp.value.split(/[、,，]/).map(s => s.trim()).filter(Boolean);
+  });
+  saveState();
+  closeModal();
+  render();
+}
+
+function openBookModal(bookId) {
+  const b = bookId ? state.books.find(x => x.id === bookId) : null;
+  const defaultF = b ? b.folderId : (state.folderFilter !== 'all' ? state.folderFilter : state.folders[0].id);
+  const fOpts = state.folders.map(f => `<option value="${f.id}" ${f.id === defaultF ? 'selected' : ''}>${esc(stripEmojiPrefix(f.name))}</option>`).join('');
+  showModal(b ? '編輯作品資訊' : '新增作品', `
+    <label class="sec-label">所屬資料夾</label>
+    <select id="bm-folder" class="select" style="margin-bottom:8px;">${fOpts}</select>
+    <label class="sec-label">書名</label>
+    <input id="bm-title" class="input" style="margin-bottom:8px;" value="${esc(b ? b.title : '')}" />
+    <label class="sec-label">作品簡介</label>
+    <textarea id="bm-desc" class="textarea" rows="3">${esc(b ? b.desc : '')}</textarea>
+    <div style="text-align:right;margin-top:12px;">
+      <button class="btn btn-primary" onclick="saveBook('${bookId || ''}')">儲存</button>
+    </div>
+  `);
+}
+
+function saveBook(bookId) {
+  const title = (document.getElementById('bm-title')?.value || '').trim();
+  if (!title) return alert('請輸入書名');
+  const folderId = document.getElementById('bm-folder')?.value || state.folders[0].id;
+  const desc = (document.getElementById('bm-desc')?.value || '').trim();
+  if (bookId) {
+    const b = state.books.find(x => x.id === bookId);
+    if (b) { b.title = title; b.folderId = folderId; b.desc = desc; }
+  } else {
+    state.books.unshift({
+      id: uid('b'), folderId, title, desc,
+      volumes: [{
+        id: uid('v'), title: '第一卷',
+        chapters: [{ id: uid('c'), title: '第一章', status: 'draft', goal: 2000, outline: '', content: '', updatedAt: nowStr(), snapshots: [] }]
+      }]
+    });
+  }
+  saveState();
+  closeModal();
+  render();
+}
+
+function addVolume(bookId) {
+  const b = state.books.find(x => x.id === bookId);
+  if (!b) return;
+  const name = prompt('新分卷名稱：', `第${(b.volumes || []).length + 1}卷`);
+  if (!name) return;
+  b.volumes.push({ id: uid('v'), title: name.trim(), chapters: [] });
+  saveState();
+  render();
+}
+
+function renameVolume(bookId, volId) {
+  const b = state.books.find(x => x.id === bookId);
+  const v = b?.volumes.find(x => x.id === volId);
+  if (!v) return;
+  const name = prompt('修改分卷名稱：', v.title);
+  if (name && name.trim()) { v.title = name.trim(); saveState(); render(); }
+}
+
+function addChapter(bookId, volId) {
+  const b = state.books.find(x => x.id === bookId);
+  const v = b?.volumes.find(x => x.id === volId);
+  if (!v) return;
+  const num = (v.chapters || []).length + 1;
+  const ch = { id: uid('c'), title: `第${num}章 新章節`, status: 'draft', goal: 2000, outline: '', content: '', updatedAt: nowStr(), snapshots: [] };
+  v.chapters.push(ch);
+  state.lastEdited = { bookId, volId, chapId: ch.id };
+  saveState();
+  render();
+}
+
+function moveChapter(bookId, volId, idx, dir) {
+  const b = state.books.find(x => x.id === bookId);
+  const v = b?.volumes.find(x => x.id === volId);
+  if (!v) return;
+  const target = idx + dir;
+  if (target < 0 || target >= v.chapters.length) return;
+  const tmp = v.chapters[idx];
+  v.chapters[idx] = v.chapters[target];
+  v.chapters[target] = tmp;
+  saveState();
+  render();
+}
+
+function deleteChapter(bookId, volId, chapId) {
+  if (!confirm('確定刪除此章節？')) return;
+  const b = state.books.find(x => x.id === bookId);
+  const v = b?.volumes.find(x => x.id === volId);
+  if (!v) return;
+  v.chapters = v.chapters.filter(c => c.id !== chapId);
+  saveState();
+  render();
+}
+
+function openExportVolumeModal(bookId, volId) {
+  const b = state.books.find(x => x.id === bookId);
+  const v = b?.volumes.find(x => x.id === volId);
+  if (!b || !v) return;
+  let words = 0;
+  (v.chapters || []).forEach(c => { words += countWords(c.content); });
+  showModal(`匯出單一分卷：${esc(v.title)}`, `
+    <div class="muted" style="margin-bottom:12px;">《${esc(b.title)}》· 共 ${(v.chapters || []).length} 章，累計 ${words.toLocaleString()} 字</div>
+    <div class="row-wrap">
+      <button class="btn btn-primary" onclick="downloadVolumeFile('${bookId}','${volId}','txt')">下載 .txt 純文字檔</button>
+      <button class="btn btn-accent" onclick="downloadVolumeFile('${bookId}','${volId}','md')">下載 .md Markdown 檔</button>
+    </div>
+  `);
+}
+
+function downloadVolumeFile(bookId, volId, ext) {
+  const b = state.books.find(x => x.id === bookId);
+  const v = b?.volumes.find(x => x.id === volId);
+  if (!b || !v) return;
+  const lines = [];
+  if (ext === 'md') {
+    lines.push(`# ${b.title} — ${v.title}\n`);
+    (v.chapters || []).forEach(c => {
+      lines.push(`## ${c.title}\n\n${c.content || ''}\n`);
+    });
+  } else {
+    lines.push(`《${b.title}》 ${v.title}\n========================================\n`);
+    (v.chapters || []).forEach(c => {
+      lines.push(`${c.title}\n----------------------------------------\n${c.content || ''}\n\n`);
+    });
+  }
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${b.title}_${v.title}.${ext}`;
+  a.click();
+  closeModal();
+}
+
+function openExportBookModal(bookId) {
+  const b = state.books.find(x => x.id === bookId);
+  if (!b) return;
+  const lines = [`《${b.title}》\n${b.desc || ''}\n========================================\n`];
+  (b.volumes || []).forEach(v => {
+    lines.push(`\n【${v.title}】\n`);
+    (v.chapters || []).forEach(c => {
+      lines.push(`\n${c.title}\n----------------------------------------\n${c.content || ''}\n`);
+    });
+  });
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${b.title}_全書匯出.txt`;
+  a.click();
+}
+
+function openGoalModal(bookId, volId, chapId) {
+  const ctx = findChapterContext(bookId, volId, chapId);
+  if (!ctx) return;
+  showModal('設定單章目標字數', `
+    <div class="row-wrap" style="margin-bottom:10px;">
+      ${[1000, 2000, 3000, 5000, 0].map(g =>
+        `<button class="btn btn-sm" onclick="applyChapGoal('${bookId}','${volId}','${chapId}',${g})">${g === 0 ? '無上限' : g + ' 字'}</button>`
+      ).join('')}
+    </div>
+    <div class="row-between">
+      <input id="custom-goal-inp" type="number" class="input" value="${ctx.chap.goal || 2000}" />
+      <button class="btn btn-primary" onclick="applyChapGoal('${bookId}','${volId}','${chapId}',Number(document.getElementById('custom-goal-inp').value)||0)">套用</button>
+    </div>
+  `);
+}
+
+function applyChapGoal(bookId, volId, chapId, goal) {
+  updateChapField(bookId, volId, chapId, 'goal', Math.max(0, goal));
+  closeModal();
+  render();
+}
+
+function openSnapshotModal(bookId, volId, chapId) {
+  const ctx = findChapterContext(bookId, volId, chapId);
+  if (!ctx) return;
+  const snaps = ctx.chap.snapshots || [];
+  const curWords = countWords(ctx.chap.content);
+
+  const listHtml = snaps.length ? snaps.map((s, idx) => {
+    const diff = countWords(s.content) - curWords;
+    const diffStr = diff === 0 ? '與現行字數相同' : (diff > 0 ? `比現行多 ${diff} 字` : `比現行少 ${Math.abs(diff)} 字`);
+    return `
+      <div class="card" style="padding:10px;">
+        <div class="row-between">
+          <strong>${esc(s.note || '手動快照')}</strong>
+          <span class="muted" style="font-size:11.5px;">${esc(s.createdAt)}</span>
+        </div>
+        <div class="muted" style="font-size:12px;margin:4px 0 8px;">${countWords(s.content)} 字（${diffStr}）</div>
+        <div class="row-wrap">
+          <button class="btn btn-xs" onclick="previewSnapshot('${bookId}','${volId}','${chapId}',${idx})">檢視全文</button>
+          <button class="btn btn-xs btn-primary" onclick="restoreSnapshot('${bookId}','${volId}','${chapId}',${idx})">還原此版本</button>
+        </div>
+      </div>`;
+  }).join('') : `<div class="empty-box">尚無歷史快照，大改稿件前可先建立存檔點。</div>`;
+
+  showModal('章節歷史快照', `
+    <div class="row-between" style="margin-bottom:12px;">
+      <input id="snap-note" class="input" placeholder="快照備註（例如：大改結局前）" />
+      <button class="btn btn-accent" onclick="createSnapshot('${bookId}','${volId}','${chapId}')">建立快照</button>
+    </div>
+    ${listHtml}
+  `);
+}
+
+function createSnapshot(bookId, volId, chapId) {
+  const ctx = findChapterContext(bookId, volId, chapId);
+  if (!ctx) return;
+  const note = (document.getElementById('snap-note')?.value || '').trim() || '手動快照';
+  ctx.chap.snapshots = ctx.chap.snapshots || [];
+  ctx.chap.snapshots.unshift({
+    id: uid('s'), note, createdAt: nowStr(),
+    title: ctx.chap.title, outline: ctx.chap.outline || '', content: ctx.chap.content || ''
+  });
+  saveState();
+  openSnapshotModal(bookId, volId, chapId);
+}
+
+function previewSnapshot(bookId, volId, chapId, idx) {
+  const ctx = findChapterContext(bookId, volId, chapId);
+  const s = ctx?.chap.snapshots?.[idx];
+  if (!s) return;
+  showModal(`快照預覽：${esc(s.note)}`, `
+    <div class="muted" style="margin-bottom:8px;">建立時間：${esc(s.createdAt)}</div>
+    <div class="reader-paper" style="max-height:55vh;overflow-y:auto;">${esc(s.content || '（無內容）')}</div>
+    <div class="row-between" style="margin-top:10px;">
+      <button class="btn btn-sm" onclick="openSnapshotModal('${bookId}','${volId}','${chapId}')">← 返回列表</button>
+      <button class="btn btn-primary btn-sm" onclick="restoreSnapshot('${bookId}','${volId}','${chapId}',${idx})">還原此版本</button>
+    </div>
+  `);
+}
+
+function restoreSnapshot(bookId, volId, chapId, idx) {
+  const ctx = findChapterContext(bookId, volId, chapId);
+  const s = ctx?.chap.snapshots?.[idx];
+  if (!ctx || !s) return;
+  ctx.chap.snapshots.unshift({
+    id: uid('s'), note: '還原前自動備份', createdAt: nowStr(),
+    title: ctx.chap.title, outline: ctx.chap.outline || '', content: ctx.chap.content || ''
+  });
+  ctx.chap.title = s.title;
+  ctx.chap.outline = s.outline;
+  ctx.chap.content = s.content;
+  ctx.chap.updatedAt = nowStr();
+  saveState();
+  closeModal();
+  render();
+}
+
+function openQuickLookupModal() {
+  const wikis = state.wiki.filter(w => matchFolder(w.folderId));
+  const ideas = state.ideas.filter(i => matchFolder(i.folderId));
+  showModal('寫作速查與靈感', `
+    <div class="sec-label">設定詞條速覽（點擊插入 [[詞條]]）</div>
+    <div class="row-wrap" style="margin-bottom:12px;">
+      ${wikis.map(w => `<button class="btn btn-xs" onclick="closeModal();insStr('[[${esc(w.title)}]]')">${esc(w.title)}</button>`).join('') || '<span class="muted">無設定詞條</span>'}
+    </div>
+    <div class="sec-label">靈感便籤</div>
+    ${ideas.map(i => `<div class="card" style="padding:8px 10px;font-size:13px;">${esc(i.text)}</div>`).join('') || '<div class="muted">尚無靈感便籤</div>'}
+  `);
+}
+
+function openTrackModal() {
+  const listHtml = state.tracks.map(t => `
+    <div class="row-between" style="padding:7px 0;border-bottom:1px solid var(--border);">
+      <div class="row-wrap">
+        <span style="width:12px;height:12px;border-radius:50%;background:${esc(t.color)};display:inline-block;"></span>
+        <strong>${esc(t.name)}</strong>
+      </div>
+      ${state.tracks.length > 1 ? `<button class="btn btn-xs" style="color:#B84A2E;" onclick="deleteTrack('${t.id}')">刪除</button>` : ''}
+    </div>`).join('');
+
+  showModal('時間線軌道管理', `
+    <div class="row-between" style="margin-bottom:12px;">
+      <input id="nt-name" class="input" placeholder="新軌道名稱（如：外傳線）" />
+      <input id="nt-color" type="color" value="#6B9080" style="width:42px;height:36px;border:none;background:none;" />
+      <button class="btn btn-primary" onclick="createTrack()">新增</button>
+    </div>
+    ${listHtml}
+  `);
+}
+
+function createTrack() {
+  const name = (document.getElementById('nt-name')?.value || '').trim();
+  const color = document.getElementById('nt-color')?.value || '#2F3E46';
+  if (!name) return;
+  state.tracks.push({ id: uid('tr'), name, color });
+  saveState();
+  openTrackModal();
+  render();
+}
+
+function deleteTrack(id) {
+  if (state.tracks.length <= 1) return;
+  const fallback = state.tracks.find(t => t.id !== id).id;
+  state.timeline.forEach(ev => { if (ev.trackId === id) ev.trackId = fallback; });
+  state.tracks = state.tracks.filter(t => t.id !== id);
+  if (state.tlTrackFilter === id) state.tlTrackFilter = 'all';
+  saveState();
+  openTrackModal();
+  render();
+}
+
+let draftTlWikiIds = [];
+let draftTlChapRefs = [];
+
+function openTlEditModal(id, presetParallelFrom) {
+  const existing = id ? state.timeline.find(x => x.id === id) : null;
+  const base = existing || presetParallelFrom || null;
+  const defaultF = base ? base.folderId : (state.folderFilter !== 'all' ? state.folderFilter : state.folders[0].id);
+  const defaultTrack = existing ? existing.trackId : (presetParallelFrom
+    ? (state.tracks.find(t => t.id !== presetParallelFrom.trackId)?.id || state.tracks[0].id)
+    : (state.tlTrackFilter !== 'all' ? state.tlTrackFilter : state.tracks[0].id));
+
+  draftTlWikiIds = existing ? [...(existing.wikiIds || [])] : [];
+  draftTlChapRefs = existing ? JSON.parse(JSON.stringify(existing.chapterRefs || [])) : [];
+
+  const fOpts = state.folders.map(f => `<option value="${f.id}" ${f.id === defaultF ? 'selected' : ''}>${esc(stripEmojiPrefix(f.name))}</option>`).join('');
+  const trOpts = state.tracks.map(t => `<option value="${t.id}" ${t.id === defaultTrack ? 'selected' : ''}>${esc(t.name)}</option>`).join('');
+  const eras = Array.from(new Set(state.timeline.map(e => e.era).filter(Boolean)));
+  const eraPills = eras.map(e => `<button type="button" class="btn btn-xs" onclick="document.getElementById('tl-era').value='${esc(e)}'">${esc(e)}</button>`).join('');
+
+  const wikiChips = state.wiki.filter(w => w.folderId === defaultF).map(w => {
+    const sel = draftTlWikiIds.includes(w.id);
+    return `<button type="button" class="pill ${sel ? 'active' : ''}" onclick="toggleDraftTlWiki(this,'${w.id}')">${esc(w.title)}</button>`;
+  }).join('');
+
+  const chapOptions = [];
+  state.books.filter(b => b.folderId === defaultF).forEach(b => {
+    (b.volumes || []).forEach(v => (v.chapters || []).forEach(c => {
+      chapOptions.push({ key: `${b.id}|${v.id}|${c.id}`, label: `《${b.title}》${c.title}` });
+    }));
+  });
+  const chapChips = chapOptions.map(opt => {
+    const [bId, vId, cId] = opt.key.split('|');
+    const sel = draftTlChapRefs.some(r => r.chapId === cId);
+    return `<button type="button" class="pill ${sel ? 'active' : ''}" onclick="toggleDraftTlChap(this,'${bId}','${vId}','${cId}')">${esc(opt.label)}</button>`;
+  }).join('');
+
+  showModal(existing ? '編輯時間事件' : (presetParallelFrom ? '新增同時間點並行支線' : '新增時間事件'), `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div>
+        <label class="sec-label">資料夾</label>
+        <select id="tl-folder" class="select">${fOpts}</select>
+      </div>
+      <div>
+        <label class="sec-label">時間線軌道</label>
+        <select id="tl-track" class="select">${trOpts}</select>
+      </div>
+    </div>
+    <label class="sec-label">所屬紀元 / 分段群組</label>
+    <input id="tl-era" class="input" style="margin-bottom:4px;" value="${esc(base ? base.era : '')}" placeholder="例如：第一卷・霧港篇" />
+    ${eraPills ? `<div class="row-wrap" style="margin-bottom:8px;">${eraPills}</div>` : ''}
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-bottom:8px;">
+      <div>
+        <label class="sec-label">時間點標記</label>
+        <input id="tl-time" class="input" value="${esc(base ? base.timeLabel : '')}" placeholder="例如：星曆 292 年・霜降" />
+      </div>
+      <div>
+        <label class="sec-label">排序權重（同值並行）</label>
+        <input id="tl-weight" type="number" class="input" value="${base ? base.weight : (state.timeline.length + 1) * 100}" />
+      </div>
+    </div>
+    <label class="sec-label">事件標題</label>
+    <input id="tl-title" class="input" style="margin-bottom:8px;" value="${esc(existing ? existing.title : '')}" />
+    <label class="sec-label">事件經過描述</label>
+    <textarea id="tl-desc" class="textarea" rows="3" style="margin-bottom:8px;">${esc(existing ? existing.desc : '')}</textarea>
+    <label class="sec-label">關聯登場設定詞條</label>
+    <div class="row-wrap" style="margin-bottom:8px;">${wikiChips || '<span class="muted">無設定詞條</span>'}</div>
+    <label class="sec-label">關聯對應章節</label>
+    <div class="row-wrap" style="margin-bottom:12px;">${chapChips || '<span class="muted">無章節</span>'}</div>
+    <div style="text-align:right;">
+      <button class="btn btn-primary" onclick="saveTimelineEvent('${id || ''}')">儲存事件</button>
+    </div>
+  `);
+}
+
+function toggleDraftTlWiki(btn, wid) {
+  const idx = draftTlWikiIds.indexOf(wid);
+  if (idx >= 0) { draftTlWikiIds.splice(idx, 1); btn.classList.remove('active'); }
+  else { draftTlWikiIds.push(wid); btn.classList.add('active'); }
+}
+
+function toggleDraftTlChap(btn, bookId, volId, chapId) {
+  const idx = draftTlChapRefs.findIndex(r => r.chapId === chapId);
+  if (idx >= 0) { draftTlChapRefs.splice(idx, 1); btn.classList.remove('active'); }
+  else { draftTlChapRefs.push({ bookId, volId, chapId }); btn.classList.add('active'); }
+}
+
+function saveTimelineEvent(id) {
+  const title = (document.getElementById('tl-title')?.value || '').trim();
+  if (!title) return alert('請輸入事件標題');
+  const rec = {
+    id: id || uid('t'),
+    folderId: document.getElementById('tl-folder')?.value || state.folders[0].id,
+    trackId: document.getElementById('tl-track')?.value || state.tracks[0].id,
+    era: (document.getElementById('tl-era')?.value || '').trim() || '未分組紀元',
+    timeLabel: (document.getElementById('tl-time')?.value || '').trim(),
+    weight: Number(document.getElementById('tl-weight')?.value) || 0,
+    title,
+    desc: (document.getElementById('tl-desc')?.value || '').trim(),
+    wikiIds: draftTlWikiIds,
+    chapterRefs: draftTlChapRefs
+  };
+  if (id) {
+    const idx = state.timeline.findIndex(x => x.id === id);
+    if (idx >= 0) state.timeline[idx] = rec;
+  } else {
+    state.timeline.push(rec);
+  }
+  saveState();
+  closeModal();
+  render();
+}
+
+function addParallelEvent(sourceId) {
+  const ev = state.timeline.find(x => x.id === sourceId);
+  if (ev) openTlEditModal(null, ev);
+}
+
+function deleteTimelineEvent(id) {
+  if (!confirm('確定刪除此時間流事件？')) return;
+  state.timeline = state.timeline.filter(x => x.id !== id);
+  saveState();
+  render();
+}
+
+let cmpLayoutMode = '2col';
+
+function openParallelCompareModal(ids) {
+  const list = ids.map(id => state.timeline.find(x => x.id === id)).filter(Boolean);
+  if (!list.length) return;
+  const idsJson = esc(JSON.stringify(ids));
+
+  const cardsHtml = list.map(ev => {
+    const tr = state.tracks.find(t => t.id === ev.trackId) || { name: '軌道', color: '#2F3E46' };
+    const wikis = (ev.wikiIds || []).map(wid => state.wiki.find(w => w.id === wid)?.title).filter(Boolean).join('、');
+    const chaps = (ev.chapterRefs || []).map(r => {
+      const ctx = findChapterContext(r.bookId, r.volId, r.chapId);
+      return ctx ? `<span class="badge" style="cursor:pointer;background:var(--sage-soft);color:#3A6351;" onclick="closeModal();jumpToChapter('${ctx.book.id}','${ctx.vol.id}','${ctx.chap.id}','read',true)">${esc(ctx.chap.title)}</span>` : '';
+    }).join('');
+    return `
+      <div class="cmp-card" style="border-top:3px solid ${esc(tr.color)};">
+        <div class="badge" style="background:${esc(tr.color)}18;color:${esc(tr.color)};margin-bottom:4px;">${esc(tr.name)}</div>
+        <div style="font-weight:700;font-size:13.5px;color:var(--primary);margin-bottom:4px;">${esc(ev.title)}</div>
+        <div style="font-size:12.5px;line-height:1.6;margin-bottom:6px;">${esc(ev.desc || '（無描述）')}</div>
+        ${wikis ? `<div class="muted" style="font-size:11.5px;margin-bottom:4px;">登場：${esc(wikis)}</div>` : ''}
+        ${chaps ? `<div class="row-wrap">${chaps}</div>` : ''}
+      </div>`;
+  }).join('');
+
+  showModal(`多視角並排對照（${esc(list[0].timeLabel || '')}）`, `
+    <div class="row-between" style="margin-bottom:10px;">
+      <span class="muted">共 ${list.length} 條並行支線</span>
+      <div class="row-wrap">
+        <button class="btn btn-xs ${cmpLayoutMode === '2col' ? 'btn-primary' : ''}" onclick='switchCmpMode("2col",${idsJson})'>雙欄並排</button>
+        <button class="btn btn-xs ${cmpLayoutMode === 'stack' ? 'btn-primary' : ''}" onclick='switchCmpMode("stack",${idsJson})'>上下堆疊</button>
+      </div>
+    </div>
+    <div class="${cmpLayoutMode === '2col' ? 'cmp-grid-2' : 'cmp-grid-1'}">${cardsHtml}</div>
+  `);
+}
+
+function switchCmpMode(mode, ids) {
+  cmpLayoutMode = mode;
+  openParallelCompareModal(ids);
+}
+
+function render() {
+  renderTopFolderSelect();
+  renderBottomNav();
+  const main = document.getElementById('app-main');
+  if (!main) return;
+  try {
+    if (state.activeTab === 'home') main.innerHTML = renderHomeModule();
+    else if (state.activeTab === 'wiki') main.innerHTML = renderWikiModule();
+    else if (state.activeTab === 'timeline') main.innerHTML = renderTimelineModule();
+    else if (state.activeTab === 'books') main.innerHTML = renderBooksModule();
+    else if (state.activeTab === 'backup') main.innerHTML = renderBackupModule();
+  } catch (err) {
+    console.error(err);
+    main.innerHTML = `<div class="card empty-box">畫面渲染異常，請重新整理或匯出備份。<br><pre style="font-size:11px;text-align:left;">${esc(err.message)}</pre></div>`;
+  }
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if (state.activeTab === 'home' || state.activeTab === 'backup') render();
+});
+
+async function triggerPwaInstall() {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  render();
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+
+render();
+</script>
+</body>
+</html>
